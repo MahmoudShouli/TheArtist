@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Artist</title>
+    <style>
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        .image-container img {
+            max-width: 100%; /* Each image takes up to 45% of the container's width */
+            height: auto;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    {% if photo_exists %}
+        <div class="image-container">
+            <!-- Original photo -->
+            <div>
+                <h3>Original Photo</h3>
+                <img src="/static/photos/photo.jpg" alt="Original Photo">
+            </div>
+            <!-- Processed photo -->
+            <div>
+                <h3>Processed Photo</h3>
+                <img src="/static/photos/processed_photo.jpg" alt="Processed Photo">
+            </div>
+        </div>
+        <br>
+        <form method="POST" action="/shoot">
+            <button type="submit">Reshoot</button>
+        </form>
+    {% else %}
+        <form method="POST" action="/shoot">
+            <button type="submit">Shoot</button>
+        </form>
+    {% endif %}
+</body>
+</html>
