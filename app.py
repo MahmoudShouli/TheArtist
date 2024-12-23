@@ -4,8 +4,12 @@ import cv2
 import numpy as np
 import os
 import time
+import serial
 
 app = Flask(__name__)
+
+arduino = serial.Serial('/dev/ttyACM0', 9600)  
+
 picam = Picamera2()
 output_dir = "static/photos"
 os.makedirs(output_dir, exist_ok=True)
@@ -78,6 +82,18 @@ def shoot():
 @app.route('/static/photos/<path:filename>')
 def serve_photo(filename):
     return send_from_directory(output_dir, filename)
+
+
+@app.route('/motor1', methods=['POST'])
+def motor1():
+    arduino.write(b'M1')  # Send "M1" to the Arduino for Motor 1
+    return "Motor 1 Activated"
+
+
+@app.route('/motor2', methods=['POST'])
+def motor2():
+    arduino.write(b'M2')  # Send "M2" to the Arduino for Motor 2
+    return "Motor 2 Activated"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
