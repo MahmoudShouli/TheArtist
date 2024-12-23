@@ -8,9 +8,8 @@ import serial
 
 app = Flask(__name__)
 
-arduino = serial.Serial('/dev/ttyACM0', 9600)  
 
-# picam = Picamera2()
+picam = Picamera2()
 output_dir = "static/photos"
 os.makedirs(output_dir, exist_ok=True)
 photo_path = os.path.join(output_dir, "photo.jpg")
