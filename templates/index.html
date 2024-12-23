@@ -3,24 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Artist</title>
+    <title>Raspberry Pi Camera</title>
     <style>
         .image-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px;
+            gap: 40px; /* Increase spacing between images */
         }
         .image-container img {
-            max-width: 100%; /* Each image takes up to 45% of the container's width */
+            max-width: 45%; /* Each image takes up to 45% of the screen's width */
             height: auto;
-            border: 2px solid #ccc;
+            border: 3px solid #ccc; /* Thicker border for emphasis */
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Larger shadow for better visibility */
+        }
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
+    <h1>Raspberry Pi Camera</h1>
     {% if photo_exists %}
         <div class="image-container">
             <!-- Original photo -->
@@ -34,7 +55,6 @@
                 <img src="/static/photos/processed_photo.jpg" alt="Processed Photo">
             </div>
         </div>
-        <br>
         <form method="POST" action="/shoot">
             <button type="submit">Reshoot</button>
         </form>

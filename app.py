@@ -22,7 +22,6 @@ def index():
 @app.route('/shoot', methods=['POST'])
 def shoot():
     global photo_path, processed_path
-    time.sleep(5)
     picam.start()
     picam.capture_file(photo_path)
     picam.stop()
@@ -64,35 +63,16 @@ def shoot():
     # Remove small dots/noise using contour filtering
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
-        if cv2.contourArea(contour) < 200:  # Further increase contour area threshold
+        if cv2.contourArea(contour) < 150:  # Increased area threshold
             cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
 
-    # Smooth the final result to remove residual noise
+    # Apply median blur to further clean noise
     cleaned_edges = cv2.medianBlur(edges, 5)
 
-    # Reinforce main edges by dilation
-    kernel = np.ones((3, 3), np.uint8)  # Adjust kernel size for thicker lines
-    reinforced_edges = cv2.dilate(cleaned_edges, kernel, iterations=1)
-
-    # Save the final optimized image
-    cv2.imwrite(processed_path, reinforced_edges)
+    # Save the cleaned image
+    cv2.imwrite(processed_path, cleaned_edges)
     return render_template('index.html', photo_exists=True)
 
-@app.route('/static/photos/<path:filename>')
-def serve_photo(filename):
-    return send_from_directory(output_dir, filename)
-
-
-@app.route('/motor1', methods=['POST'])
-def motor1():
-    arduino.write(b'M1')  # Send "M1" to the Arduino for Motor 1
-    return "Motor 1 Activated"
-
-
-@app.route('/motor2', methods=['POST'])
-def motor2():
-    arduino.write(b'M2')  # Send "M2" to the Arduino for Motor 2
-    return "Motor 2 Activated"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
