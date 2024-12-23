@@ -11,10 +11,10 @@ app = Flask(__name__)
 arduino = serial.Serial('/dev/ttyACM0', 9600)  
 
 # picam = Picamera2()
-# output_dir = "static/photos"
-# os.makedirs(output_dir, exist_ok=True)
-# photo_path = os.path.join(output_dir, "photo.jpg")
-# processed_path = os.path.join(output_dir, "processed_photo.jpg")
+output_dir = "static/photos"
+os.makedirs(output_dir, exist_ok=True)
+photo_path = os.path.join(output_dir, "photo.jpg")
+processed_path = os.path.join(output_dir, "processed_photo.jpg")
 
 @app.route('/')
 def index():
