@@ -18,22 +18,15 @@ except Exception as e:
 def index():
     return render_template('simple.html')  # Load the HTML form
 
-@app.route('/A4', methods=['POST'])
+@app.route('/send', methods=['POST'])
 def send_to_arduino():
     if ser is None:
         return "Error: Arduino not connected."
-    try:
-        ser.write('User chose A4')  # Send text to Arduino
-        return f"Sent to Arduino: {text}"
-    except Exception as e:
-        return f"Error: {e}"
 
-@app.route('/A3', methods=['POST'])
-def send_to_arduino():
-    if ser is None:
-        return "Error: Arduino not connected."
+    # Get the text from the form
+    text = request.form['text']
     try:
-        ser.write('User chose A3')  # Send text to Arduino
+        ser.write(text.encode())  # Send text to Arduino
         return f"Sent to Arduino: {text}"
     except Exception as e:
         return f"Error: {e}"
