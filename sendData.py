@@ -24,6 +24,7 @@ def runA3():
         return "Error: Arduino not connected."
     try:
         ser.write('A3\n'.encode())  # Send text to Arduino
+        render_template('simple.html')
         return f"Sent to Arduino: A3"
     except Exception as e:
         return f"Error: {e}"
@@ -35,6 +36,7 @@ def runA4():
         return "Error: Arduino not connected."
     try:
         ser.write('A4\n'.encode())  # Send text to Arduino
+        render_template('simple.html')
         return f"Sent to Arduino: A4"
     except Exception as e:
         return f"Error: {e}"
