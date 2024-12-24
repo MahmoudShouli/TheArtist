@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 import serial
 
 # Flask app
@@ -24,11 +24,10 @@ def runA3():
         return "Error: Arduino not connected."
     try:
         ser.write('A3\n'.encode())  # Send text to Arduino
-        render_template('simple.html')
-        return f"Sent to Arduino: A3"
+        print("Sent to Arduino: A3")  # Debug log
     except Exception as e:
-        return f"Error: {e}"
-    
+        print(f"Error: {e}")
+    return redirect(url_for('index'))  # Redirect back to the main page
 
 @app.route('/A4', methods=['POST'])
 def runA4():
@@ -36,10 +35,10 @@ def runA4():
         return "Error: Arduino not connected."
     try:
         ser.write('A4\n'.encode())  # Send text to Arduino
-        render_template('simple.html')
-        return f"Sent to Arduino: A4"
+        print("Sent to Arduino: A4")  # Debug log
     except Exception as e:
-        return f"Error: {e}"
+        print(f"Error: {e}")
+    return redirect(url_for('index'))  # Redirect back to the main page
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
