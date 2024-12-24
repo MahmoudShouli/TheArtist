@@ -19,7 +19,7 @@ def index():
     return render_template('simple.html')  # Load the HTML form
 
 @app.route('/A3', methods=['POST'])
-def send_to_arduino():
+def runA3():
     if ser is None:
         return "Error: Arduino not connected."
     try:
@@ -30,7 +30,7 @@ def send_to_arduino():
     
 
 @app.route('/A4', methods=['POST'])
-def send_to_arduino():
+def runA4():
     if ser is None:
         return "Error: Arduino not connected."
     try:
