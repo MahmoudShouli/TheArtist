@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Send to Arduino</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor Control</title>
 </head>
 <body>
-    <h1>Send Text to Arduino</h1>
-    <form action="/send" method="POST">
-        <label for="text">Enter text:</label>
-        <input type="text" id="text" name="text" required>
-        <button type="submit">Send</button>
+    <h1>Motor Control</h1>
+    <form action="/A3" method="post">
+        <button type="submit">A3</button>
+    </form>
+    <form action="/A4" method="post">
+        <button type="submit">A4</button>
     </form>
 </body>
 </html>
