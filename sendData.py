@@ -23,7 +23,7 @@ def runA3():
     if ser is None:
         return "Error: Arduino not connected."
     try:
-        ser.write('A3')  # Send text to Arduino
+        ser.write('A3\n'.encode())  # Send text to Arduino
         return f"Sent to Arduino: A3"
     except Exception as e:
         return f"Error: {e}"
@@ -34,7 +34,7 @@ def runA4():
     if ser is None:
         return "Error: Arduino not connected."
     try:
-        ser.write('A4')  # Send text to Arduino
+        ser.write('A4\n'.encode())  # Send text to Arduino
         return f"Sent to Arduino: A4"
     except Exception as e:
         return f"Error: {e}"
