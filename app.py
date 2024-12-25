@@ -21,6 +21,7 @@ def index():
 
 @app.route('/shoot', methods=['POST'])
 def shoot():
+    time.sleep(5)
     global photo_path, processed_path
     picam.start()
     picam.capture_file(photo_path)
