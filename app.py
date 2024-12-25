@@ -46,21 +46,24 @@ def shoot():
     # Apply Gaussian blur to reduce noise
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
+    # Apply histogram equalization to enhance contrast
+    equalized = cv2.equalizeHist(blurred)
+
     # Detect edges using Canny
-    edges = cv2.Canny(blurred, 50, 150)
+    edges = cv2.Canny(equalized, 50, 150)
 
-    # Remove small noise using morphology
+    # Use morphological operations to clean up edges
     kernel = np.ones((3, 3), np.uint8)
-    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=1)
+    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    # Ensure all facial features are retained
+    # Ensure facial features are retained by keeping key contours
     contours, _ = cv2.findContours(cleaned_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     final_edges = np.zeros_like(cleaned_edges)
     for contour in contours:
-        if cv2.contourArea(contour) > 50:  # Keep all relevant features
+        if cv2.contourArea(contour) > 50:  # Lower threshold for smaller features
             cv2.drawContours(final_edges, [contour], -1, 255, thickness=1)
 
-    # Invert the colors (lines black on white background)
+    # Invert the image to make lines black on white background
     inverted_edges = cv2.bitwise_not(final_edges)
 
     # Save the processed image
