@@ -8,7 +8,6 @@ import serial
 
 app = Flask(__name__)
 
-
 picam = Picamera2()
 output_dir = "static/photos"
 os.makedirs(output_dir, exist_ok=True)
@@ -21,7 +20,7 @@ def index():
 
 @app.route('/shoot', methods=['POST'])
 def shoot():
-    time.sleep(5) #sleep
+    time.sleep(5)  # Sleep for stabilization
     global photo_path, processed_path
     picam.start()
     picam.capture_file(photo_path)
@@ -52,26 +51,25 @@ def shoot():
     # Apply Gaussian blur to reduce noise
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # Apply sharpening to enhance edges
-    sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
-    sharpened = cv2.filter2D(blurred, -1, sharpen_kernel)
+    # Detect edges using Canny for more precise outlines
+    edges = cv2.Canny(blurred, 50, 150)
 
-    # Apply adaptive thresholding for edge detection
-    edges = cv2.adaptiveThreshold(
-        sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
-    )
+    # Remove small dots/noise using morphology
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    # Remove small dots/noise using contour filtering
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Remove internal details of hair (outline only)
+    contours, _ = cv2.findContours(cleaned_edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
-        if cv2.contourArea(contour) < 150:  # Increased area threshold
-            cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
+        if cv2.contourArea(contour) > 200:  # Threshold for hair
+            cv2.drawContours(cleaned_edges, [contour], -1, 255, thickness=cv2.FILLED)
 
-    # Apply median blur to further clean noise
-    cleaned_edges = cv2.medianBlur(edges, 5)
+    # Dilate and erode for smooth, connected lines
+    final_edges = cv2.dilate(cleaned_edges, kernel, iterations=1)
+    final_edges = cv2.erode(final_edges, kernel, iterations=1)
 
-    # Save the cleaned image
-    cv2.imwrite(processed_path, cleaned_edges)
+    # Save the processed image
+    cv2.imwrite(processed_path, final_edges)
     return render_template('index.html', photo_exists=True)
 
 
