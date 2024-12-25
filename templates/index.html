@@ -9,14 +9,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 40px; /* Increase spacing between images */
+            gap: 40px; 
         }
         .image-container img {
-            width: 50%; /* Each image takes up to 45% of the screen's width */
+            width: 100%; 
             height: auto;
-            border: 3px solid #ccc; /* Thicker border for emphasis */
+            border: 3px solid #ccc; 
             border-radius: 10px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Larger shadow for better visibility */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /
         }
         body {
             text-align: center;
@@ -44,12 +44,12 @@
     <h1>Raspberry Pi Camera</h1>
     {% if photo_exists %}
         <div class="image-container">
-            <!-- Original photo -->
+           
             <div>
                 <h3>Original Photo</h3>
                 <img src="/static/photos/photo.jpg" alt="Original Photo">
             </div>
-            <!-- Processed photo -->
+            
             <div>
                 <h3>Processed Photo</h3>
                 <img src="/static/photos/processed_photo.jpg" alt="Processed Photo">
