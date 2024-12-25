@@ -28,46 +28,30 @@ def shoot():
     # Read the captured image
     image = cv2.imread(photo_path)
 
-    # Convert to HSV for better background masking
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([35, 55, 55])  # Adjust for green background
-    upper_green = np.array([85, 255, 255])
-    mask = cv2.inRange(hsv, lower_green, upper_green)
-
-    # Invert the mask to focus on the subject (non-green parts)
-    mask_inv = cv2.bitwise_not(mask)
-
-    # Apply the mask to retain only the subject
-    foreground = cv2.bitwise_and(image, image, mask=mask_inv)
-
     # Convert to grayscale
-    gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Apply Gaussian blur to reduce noise
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # Apply histogram equalization to enhance contrast
-    equalized = cv2.equalizeHist(blurred)
+    # Apply adaptive thresholding for edge detection
+    edges = cv2.adaptiveThreshold(
+        blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2
+    )
 
-    # Detect edges using Canny
-    edges = cv2.Canny(equalized, 50, 150)
-
-    # Use morphological operations to clean up edges
+    # Use morphology to clean noise and connect lines
     kernel = np.ones((3, 3), np.uint8)
-    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
+    edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=1)
 
-    # Ensure facial features are retained by keeping key contours
-    contours, _ = cv2.findContours(cleaned_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    final_edges = np.zeros_like(cleaned_edges)
+    # Emphasize contours of facial features
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    final_edges = np.zeros_like(edges)
     for contour in contours:
-        if cv2.contourArea(contour) > 50:  # Lower threshold for smaller features
+        if cv2.contourArea(contour) > 100:  # Threshold to keep facial features
             cv2.drawContours(final_edges, [contour], -1, 255, thickness=1)
 
-    # Invert the image to make lines black on white background
-    inverted_edges = cv2.bitwise_not(final_edges)
-
     # Save the processed image
-    cv2.imwrite(processed_path, inverted_edges)
+    cv2.imwrite(processed_path, final_edges)
     return render_template('index.html', photo_exists=True)
 
 
