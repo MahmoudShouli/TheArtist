@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import os
 import time
-import serial
 
 app = Flask(__name__)
 
@@ -41,35 +40,32 @@ def shoot():
     # Apply the mask to retain only the subject
     foreground = cv2.bitwise_and(image, image, mask=mask_inv)
 
-    # Ensure the subject remains visible (no blank areas)
-    background = np.zeros_like(image)  # Black background
-    combined = cv2.add(foreground, background)
-
-    # Convert to grayscale for edge detection
-    gray = cv2.cvtColor(combined, cv2.COLOR_BGR2GRAY)
+    # Convert to grayscale
+    gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
     # Apply Gaussian blur to reduce noise
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # Detect edges using Canny for more precise outlines
+    # Detect edges using Canny
     edges = cv2.Canny(blurred, 50, 150)
 
-    # Remove small dots/noise using morphology
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
+    # Remove small noise using morphology
+    kernel = np.ones((3, 3), np.uint8)
+    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=1)
 
-    # Remove internal details of hair (outline only)
-    contours, _ = cv2.findContours(cleaned_edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # Focus on keeping only large contours (e.g., hair, face outline)
+    contours, _ = cv2.findContours(cleaned_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    final_edges = np.zeros_like(cleaned_edges)
     for contour in contours:
-        if cv2.contourArea(contour) > 200:  # Threshold for hair
-            cv2.drawContours(cleaned_edges, [contour], -1, 255, thickness=cv2.FILLED)
+        if cv2.contourArea(contour) > 200:  # Keep large features
+            cv2.drawContours(final_edges, [contour], -1, 255, thickness=1)
 
-    # Dilate and erode for smooth, connected lines
-    final_edges = cv2.dilate(cleaned_edges, kernel, iterations=1)
-    final_edges = cv2.erode(final_edges, kernel, iterations=1)
+    # Smooth and connect the lines further
+    smoothed_edges = cv2.dilate(final_edges, kernel, iterations=1)
+    smoothed_edges = cv2.erode(smoothed_edges, kernel, iterations=1)
 
     # Save the processed image
-    cv2.imwrite(processed_path, final_edges)
+    cv2.imwrite(processed_path, smoothed_edges)
     return render_template('index.html', photo_exists=True)
 
 
