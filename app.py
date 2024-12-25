@@ -53,19 +53,18 @@ def shoot():
     kernel = np.ones((3, 3), np.uint8)
     cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=1)
 
-    # Focus on keeping only large contours (e.g., hair, face outline)
+    # Ensure all facial features are retained
     contours, _ = cv2.findContours(cleaned_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     final_edges = np.zeros_like(cleaned_edges)
     for contour in contours:
-        if cv2.contourArea(contour) > 200:  # Keep large features
+        if cv2.contourArea(contour) > 50:  # Keep all relevant features
             cv2.drawContours(final_edges, [contour], -1, 255, thickness=1)
 
-    # Smooth and connect the lines further
-    smoothed_edges = cv2.dilate(final_edges, kernel, iterations=1)
-    smoothed_edges = cv2.erode(smoothed_edges, kernel, iterations=1)
+    # Invert the colors (lines black on white background)
+    inverted_edges = cv2.bitwise_not(final_edges)
 
     # Save the processed image
-    cv2.imwrite(processed_path, smoothed_edges)
+    cv2.imwrite(processed_path, inverted_edges)
     return render_template('index.html', photo_exists=True)
 
 
