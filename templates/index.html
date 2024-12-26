@@ -16,7 +16,7 @@
             height: auto;
             border: 3px solid #ccc; 
             border-radius: 10px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
         body {
             text-align: center;
@@ -57,6 +57,9 @@
         </div>
         <form method="POST" action="/shoot">
             <button type="submit">Reshoot</button>
+        </form>
+        <form method="POST" action="/generate_gcode">
+            <button type="submit">Generate G-code</button>
         </form>
     {% else %}
         <form method="POST" action="/shoot">
