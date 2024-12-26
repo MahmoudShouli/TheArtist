@@ -54,12 +54,8 @@ def shoot():
     # Apply the mask to retain only the subject
     foreground = cv2.bitwise_and(image, image, mask=mask_inv)
 
-    # Ensure the subject remains visible (no blank areas)
-    background = np.zeros_like(image)  # Black background
-    combined = cv2.add(foreground, background)
-
     # Convert to grayscale for edge detection
-    gray = cv2.cvtColor(combined, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
     # Apply Gaussian blur to reduce noise
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -73,17 +69,12 @@ def shoot():
         sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
     )
 
-    # Remove small dots/noise using contour filtering
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    for contour in contours:
-        if cv2.contourArea(contour) < 150:  # Increased area threshold
-            cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
+    # Apply morphological closing to connect lines
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
 
-    # Apply median blur to further clean noise
-    cleaned_edges = cv2.medianBlur(edges, 5)
-
-    # Save the cleaned image
-    cv2.imwrite(processed_path, cleaned_edges)
+    # Save the processed image
+    cv2.imwrite(processed_path, closed_edges)
     return render_template('index.html', photo_exists=True)
 
 def generate_gcode_from_image(image_path, gcode_path):
