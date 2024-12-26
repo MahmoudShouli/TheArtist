@@ -44,25 +44,25 @@ def shoot():
 
     # Convert to HSV for better background masking
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([35, 55, 55])  # Adjust for green background
-    upper_green = np.array([85, 255, 255])
+
+    # Define a wider range for green detection to handle variations
+    lower_green = np.array([30, 40, 40])  # Adjusted for light green
+    upper_green = np.array([90, 255, 255])  # Adjusted for dark green
+
+    # Create a mask for green areas
     mask = cv2.inRange(hsv, lower_green, upper_green)
 
     # Invert the mask to focus on the subject (non-green parts)
     mask_inv = cv2.bitwise_not(mask)
 
     # Apply the mask to retain only the subject
-    foreground = cv2.bitwise_and(image, image, mask=mask_inv)
+    foreground_cleaned = cv2.bitwise_and(image, image, mask=mask_inv)
 
-    # Ensure the subject remains visible (no blank areas)
-    background = np.zeros_like(image)  # Black background
-    combined = cv2.add(foreground, background)
-
-    # Convert to grayscale for edge detection
-    gray = cv2.cvtColor(combined, cv2.COLOR_BGR2GRAY)
+    # Convert the cleaned foreground to grayscale for edge detection
+    gray_cleaned = cv2.cvtColor(foreground_cleaned, cv2.COLOR_BGR2GRAY)
 
     # Apply Gaussian blur to reduce noise
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    blurred = cv2.GaussianBlur(gray_cleaned, (5, 5), 0)
 
     # Apply sharpening to enhance edges
     sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
@@ -76,13 +76,13 @@ def shoot():
     # Remove small dots/noise using contour filtering
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
-        if cv2.contourArea(contour) < 150:  # Increased area threshold
+        if cv2.contourArea(contour) < 150:  # Increased area threshold to remove noise
             cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
 
     # Apply median blur to further clean noise
     cleaned_edges = cv2.medianBlur(edges, 5)
 
-    # Save the cleaned image
+    # Save the processed (edge-detected) image
     cv2.imwrite(processed_path, cleaned_edges)
     return render_template('index.html', photo_exists=True)
 
