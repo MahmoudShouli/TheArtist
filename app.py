@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import os
 import time
-import serial
 
 app = Flask(__name__)
 
@@ -60,20 +59,20 @@ def shoot():
         sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
     )
 
-    # Remove small dots/noise using contour filtering
+    # Remove random noise using contour filtering
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
-        if cv2.contourArea(contour) < 200:  # Increased area threshold
-            cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
+        if cv2.contourArea(contour) < 200:  # Strict threshold for noise removal
+            cv2.drawContours(edges, [contour], -1, 0, -1)
 
-    # Apply morphological operations to clean noise and thin the lines
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
+    # Thin the lines to make them suitable for CNC plotting
+    kernel = np.ones((2, 2), np.uint8)
     thinned_edges = cv2.morphologyEx(edges, cv2.MORPH_ERODE, kernel, iterations=1)
 
-    # Apply median blur to further clean noise
-    cleaned_edges = cv2.medianBlur(thinned_edges, 5)
+    # Final cleaning with median blur to remove remaining dots
+    cleaned_edges = cv2.medianBlur(thinned_edges, 3)
 
-    # Save the cleaned image
+    # Save the processed image
     cv2.imwrite(processed_path, cleaned_edges)
     return render_template('index.html', photo_exists=True)
 
