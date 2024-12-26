@@ -63,15 +63,15 @@ def shoot():
     # Remove small dots/noise using contour filtering
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
-        if cv2.contourArea(contour) < 150:  # Increased area threshold
+        if cv2.contourArea(contour) < 200:  # Increased area threshold
             cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
 
-    # Apply additional morphological operations to clean small artifacts
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    edges = cv2.morphologyEx(edges, cv2.MORPH_OPEN, kernel, iterations=1)
+    # Apply morphological operations to clean noise and thin the lines
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
+    thinned_edges = cv2.morphologyEx(edges, cv2.MORPH_ERODE, kernel, iterations=1)
 
     # Apply median blur to further clean noise
-    cleaned_edges = cv2.medianBlur(edges, 5)
+    cleaned_edges = cv2.medianBlur(thinned_edges, 5)
 
     # Save the cleaned image
     cv2.imwrite(processed_path, cleaned_edges)
