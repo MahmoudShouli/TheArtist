@@ -55,18 +55,21 @@ def shoot():
         sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
     )
 
-    # Remove small noise
+    # Remove noise and preserve facial features
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     clean_face = np.zeros_like(edges)
 
     for contour in contours:
         area = cv2.contourArea(contour)
         x, y, w, h = cv2.boundingRect(contour)
-        aspect_ratio = w / h
 
-        # Retain features with appropriate area and aspect ratio
-        if 100 < area < 4000 and 0.3 < aspect_ratio < 3.0:
+        # Keep contours within a reasonable size range
+        if 500 < area < 5000:  # Adjusted size range for facial features
             cv2.drawContours(clean_face, [contour], -1, 255, thickness=1)
+
+    # Final cleanup: Remove stray dots using morphological operations
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    clean_face = cv2.morphologyEx(clean_face, cv2.MORPH_OPEN, kernel, iterations=1)
 
     # Save the final processed image
     cv2.imwrite(processed_path, clean_face)
