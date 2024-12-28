@@ -54,7 +54,7 @@ def shoot():
     # Apply the mask to retain only the subject
     foreground = cv2.bitwise_and(image, image, mask=mask_inv)
 
-    # Convert to grayscale for edge detection
+   # Convert to grayscale for edge detection
     gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
     # Apply Gaussian blur to reduce noise
@@ -64,17 +64,16 @@ def shoot():
     sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
     sharpened = cv2.filter2D(blurred, -1, sharpen_kernel)
 
-    # Apply adaptive thresholding for edge detection
-    edges = cv2.adaptiveThreshold(
-        sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
-    )
+    # Apply Canny edge detection for connected edges
+    edges = cv2.Canny(sharpened, threshold1=50, threshold2=150)
 
-    # Apply morphological closing to connect lines
+    # Apply morphological dilation to connect edges further
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+    connected_edges = cv2.dilate(edges, kernel, iterations=1)
 
     # Save the processed image
-    cv2.imwrite(processed_path, closed_edges)
+    cv2.imwrite(processed_path, connected_edges)
+
     return render_template('index.html', photo_exists=True)
 
 def generate_gcode_from_image(image_path, gcode_path):
