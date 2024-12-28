@@ -53,31 +53,30 @@ def shoot():
 
     # Apply the mask to retain only the subject
     foreground = cv2.bitwise_and(image, image, mask=mask_inv)
-    
+
     # Convert to grayscale for edge detection
     gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
-    # Apply histogram equalization for better contrast
-    equalized = cv2.equalizeHist(gray)
+    # Enhance contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    enhanced = clahe.apply(gray)
 
-    # Apply bilateral filtering for edge preservation while smoothing
-    smoothed = cv2.bilateralFilter(equalized, d=9, sigmaColor=75, sigmaSpace=75)
+    # Apply Gaussian blur for noise reduction
+    blurred = cv2.GaussianBlur(enhanced, (5, 5), 0)
 
-    # Apply Canny edge detection with refined thresholds
-    edges = cv2.Canny(smoothed, threshold1=80, threshold2=150)
+    # Apply Canny edge detection with adjusted thresholds
+    edges = cv2.Canny(blurred, threshold1=50, threshold2=200)
 
-    # Use morphological closing to connect broken edges
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
-    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+    # Morphological operations to enhance connectivity
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    connected_edges = cv2.dilate(edges, kernel, iterations=1)
 
-    # Apply additional thresholding to isolate strong edges
-    _, final_edges = cv2.threshold(cleaned_edges, 127, 255, cv2.THRESH_BINARY)
-
-    # Invert the image for white background
-    inverted_edges = cv2.bitwise_not(final_edges)
+    # Invert colors to make background white and edges black
+    inverted_edges = cv2.bitwise_not(connected_edges)
 
     # Save the processed image
     cv2.imwrite(processed_path, inverted_edges)
+
 
 
 
