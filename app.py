@@ -54,28 +54,32 @@ def shoot():
     # Apply the mask to retain only the subject
     foreground = cv2.bitwise_and(image, image, mask=mask_inv)
 
-   # Convert to grayscale for edge detection
+  # Convert to grayscale for edge detection
     gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
+    # Apply histogram equalization to enhance contrast
+    equalized = cv2.equalizeHist(gray)
+
     # Apply Gaussian blur to reduce noise
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    blurred = cv2.GaussianBlur(equalized, (5, 5), 0)
 
     # Apply sharpening to enhance edges
     sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
     sharpened = cv2.filter2D(blurred, -1, sharpen_kernel)
 
-    # Apply Canny edge detection for connected edges
-    edges = cv2.Canny(sharpened, threshold1=50, threshold2=150)
+    # Apply Canny edge detection with fine-tuned thresholds
+    edges = cv2.Canny(sharpened, threshold1=50, threshold2=100)
 
-    # Apply morphological dilation to connect edges further
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    connected_edges = cv2.dilate(edges, kernel, iterations=1)
+    # Morphological filtering to clean up the edges
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
 
-    
-    inverted_edges = cv2.bitwise_not(connected_edges)
+    # Invert the black and white colors
+    inverted_edges = cv2.bitwise_not(cleaned_edges)
 
     # Save the processed image
     cv2.imwrite(processed_path, inverted_edges)
+
 
     return render_template('index.html', photo_exists=True)
 
