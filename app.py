@@ -54,38 +54,43 @@ def shoot():
     # Apply the mask to retain only the subject
     foreground = cv2.bitwise_and(image, image, mask=mask_inv)
 
-   # Convert to grayscale for edge detection
+    # Convert to grayscale for edge detection
     gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
-    # Enhance contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
+    # Enhance contrast using CLAHE
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     enhanced = clahe.apply(gray)
 
-    # Apply bilateral filtering for edge preservation while smoothing
+    # Apply bilateral filter for noise reduction while preserving edges
     smoothed = cv2.bilateralFilter(enhanced, d=9, sigmaColor=75, sigmaSpace=75)
 
-    # Apply Canny edge detection with refined thresholds
-    edges = cv2.Canny(smoothed, threshold1=100, threshold2=200)
+    # Sharpen the image to enhance edges
+    sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+    sharpened = cv2.filter2D(smoothed, -1, sharpen_kernel)
 
-    # Use morphological operations to enhance continuity of edges
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+    # Apply Canny edge detection with optimized thresholds
+    edges = cv2.Canny(sharpened, threshold1=70, threshold2=180)
 
-    # Remove small contours to reduce noise
-    contours, _ = cv2.findContours(cleaned_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    height, width = cleaned_edges.shape
+    # Morphological closing to connect broken edges
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    connected_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+
+    # Find and filter contours based on size
+    contours, _ = cv2.findContours(connected_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    height, width = connected_edges.shape
     mask = np.zeros((height, width), dtype=np.uint8)
 
-    # Filter contours based on size
+    # Draw contours that meet the size criteria
     for contour in contours:
-        if cv2.contourArea(contour) > 100:  # Adjust this threshold for smaller/larger features
+        if cv2.contourArea(contour) > 50:  # Include slightly smaller features
             cv2.drawContours(mask, [contour], -1, 255, thickness=cv2.FILLED)
 
-    # Invert colors for a white background and black edges
+    # Invert colors for white background and black features
     inverted_edges = cv2.bitwise_not(mask)
 
     # Save the processed image
     cv2.imwrite(processed_path, inverted_edges)
+
 
 
 
