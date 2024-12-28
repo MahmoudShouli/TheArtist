@@ -71,8 +71,11 @@ def shoot():
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     connected_edges = cv2.dilate(edges, kernel, iterations=1)
 
+    
+    inverted_edges = cv2.bitwise_not(connected_edges)
+
     # Save the processed image
-    cv2.imwrite(processed_path, connected_edges)
+    cv2.imwrite(processed_path, inverted_edges)
 
     return render_template('index.html', photo_exists=True)
 
