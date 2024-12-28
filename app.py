@@ -55,7 +55,6 @@ def shoot():
     foreground = cv2.bitwise_and(image, image, mask=mask_inv)
 
     # Convert to grayscale for edge detection
-    # Convert to grayscale for edge detection
     gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
     # Enhance contrast using CLAHE
@@ -63,48 +62,35 @@ def shoot():
     enhanced = clahe.apply(gray)
 
     # Smooth the image using bilateral filtering
-    smoothed = cv2.bilateralFilter(enhanced, d=9, sigmaColor=75, sigmaSpace=75)
+    smoothed = cv2.bilateralFilter(enhanced, d=5, sigmaColor=50, sigmaSpace=50)
 
     # Sharpen the image to highlight edges
     sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
     sharpened = cv2.filter2D(smoothed, -1, sharpen_kernel)
 
     # Apply Canny edge detection
-    edges = cv2.Canny(sharpened, threshold1=80, threshold2=200)
+    edges = cv2.Canny(sharpened, threshold1=50, threshold2=150)
 
     # Apply morphological closing to connect broken edges
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
 
-    # Mask out areas outside the face region
+    # Find and filter contours based on size
+    contours, _ = cv2.findContours(closed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     height, width = closed_edges.shape
-    face_mask = np.zeros((height, width), dtype=np.uint8)
+    mask = np.zeros((height, width), dtype=np.uint8)
 
-    # Assuming the face is roughly central, define a rectangle mask
-    face_center = (int(width / 2), int(height / 2))
-    face_width, face_height = int(width * 0.6), int(height * 0.8)
-    cv2.rectangle(face_mask, 
-                (face_center[0] - face_width // 2, face_center[1] - face_height // 2), 
-                (face_center[0] + face_width // 2, face_center[1] + face_height // 2), 
-                255, thickness=cv2.FILLED)
-
-    # Apply the mask to the edges
-    focused_edges = cv2.bitwise_and(closed_edges, closed_edges, mask=face_mask)
-
-    # Filter small contours to remove noise
-    contours, _ = cv2.findContours(focused_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    final_mask = np.zeros((height, width), dtype=np.uint8)
-
-    # Filter contours based on area
+    # Include smaller contours
     for contour in contours:
-        if cv2.contourArea(contour) > 100:  # Adjust threshold to include desired details
-            cv2.drawContours(final_mask, [contour], -1, 255, thickness=cv2.FILLED)
+        if cv2.contourArea(contour) > 30:  # Lowered area threshold to include more details
+            cv2.drawContours(mask, [contour], -1, 255, thickness=cv2.FILLED)
 
     # Invert the image for white background and black edges
-    final_output = cv2.bitwise_not(final_mask)
+    final_output = cv2.bitwise_not(mask)
 
     # Save the processed image
     cv2.imwrite(processed_path, final_output)
+
 
 
 
