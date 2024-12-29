@@ -61,18 +61,41 @@ def shoot():
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     enhanced = clahe.apply(gray)
 
-    # Apply Gaussian blur for slight noise reduction
-    blurred = cv2.GaussianBlur(enhanced, (5, 5), 0)
+    # Apply Gaussian blur for noise reduction
+    blurred = cv2.GaussianBlur(enhanced, (3, 3), 0)
 
-    # Apply Canny edge detection with lower thresholds for sensitivity
-    edges = cv2.Canny(blurred, threshold1=20, threshold2=80)
+    # Apply refined Canny edge detection for strong features
+    edges = cv2.Canny(blurred, threshold1=50, threshold2=150)
 
     # Apply morphological closing to connect broken edges
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
 
-    # Invert the edges for a white background and black features
-    final_output = cv2.bitwise_not(closed_edges)
+    # Create a mask to isolate the face region
+    height, width = closed_edges.shape
+    face_mask = np.zeros((height, width), dtype=np.uint8)
+    face_center = (int(width / 2), int(height / 2))
+    face_width, face_height = int(width * 0.5), int(height * 0.6)
+    cv2.rectangle(
+        face_mask,
+        (face_center[0] - face_width // 2, face_center[1] - face_height // 2),
+        (face_center[0] + face_width // 2, face_center[1] + face_height // 2),
+        255,
+        thickness=cv2.FILLED,
+    )
+
+    # Apply the face mask to the detected edges
+    focused_edges = cv2.bitwise_and(closed_edges, closed_edges, mask=face_mask)
+
+    # Filter contours to keep only significant features
+    contours, _ = cv2.findContours(focused_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    mask = np.zeros((height, width), dtype=np.uint8)
+    for contour in contours:
+        if 100 < cv2.contourArea(contour) < 5000:  # Keep medium-sized contours
+            cv2.drawContours(mask, [contour], -1, 255, thickness=1)
+
+    # Invert the image for a white background and black features
+    final_output = cv2.bitwise_not(mask)
 
     # Save the processed image
     cv2.imwrite(processed_path, final_output)
