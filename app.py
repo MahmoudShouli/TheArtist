@@ -58,24 +58,37 @@ def shoot():
     gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
     # Enhance contrast using CLAHE
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
     enhanced = clahe.apply(gray)
 
-    # Apply Gaussian blur for slight smoothing
-    blurred = cv2.GaussianBlur(enhanced, (5, 5), 0)
+    # Apply bilateral filter for noise reduction while preserving edges
+    smoothed = cv2.bilateralFilter(enhanced, d=9, sigmaColor=75, sigmaSpace=75)
 
-    # Apply refined Canny edge detection
-    edges = cv2.Canny(blurred, threshold1=30, threshold2=100)
+    # Sharpen the image for stronger feature edges
+    sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+    sharpened = cv2.filter2D(smoothed, -1, sharpen_kernel)
 
-    # Use morphological operations to clean up edges
+    # Apply Canny edge detection with precise thresholds
+    edges = cv2.Canny(sharpened, threshold1=50, threshold2=150)
+
+    # Use a mask to isolate only the facial region
+    height, width = edges.shape
+    face_mask = np.zeros((height, width), dtype=np.uint8)
+    cv2.rectangle(face_mask, (width // 4, height // 6), (3 * width // 4, 5 * height // 6), 255, thickness=cv2.FILLED)
+
+    # Apply the face mask
+    focused_edges = cv2.bitwise_and(edges, edges, mask=face_mask)
+
+    # Apply morphological closing to strengthen connected edges
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    cleaned_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+    cleaned_edges = cv2.morphologyEx(focused_edges, cv2.MORPH_CLOSE, kernel)
 
-    # Invert the colors for black features on a white background
+    # Invert the image for a white background and black features
     final_output = cv2.bitwise_not(cleaned_edges)
 
     # Save the processed image
     cv2.imwrite(processed_path, final_output)
+
 
 
 
