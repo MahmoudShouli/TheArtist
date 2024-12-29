@@ -61,17 +61,49 @@ def shoot():
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     enhanced = clahe.apply(gray)
 
-    # Apply Gaussian blur for slight noise reduction
-    blurred = cv2.GaussianBlur(enhanced, (5, 5), 0)
+    # Apply bilateral filtering for noise reduction while preserving edges
+    smoothed = cv2.bilateralFilter(enhanced, d=9, sigmaColor=50, sigmaSpace=50)
 
-    # Apply Canny edge detection with lower thresholds
-    edges = cv2.Canny(blurred, threshold1=20, threshold2=60)
+    # Sharpen the image to emphasize key details
+    sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+    sharpened = cv2.filter2D(smoothed, -1, sharpen_kernel)
 
-    # Invert the edges for a white background and black features
-    inverted_edges = cv2.bitwise_not(edges)
+    # Apply refined Canny edge detection
+    edges = cv2.Canny(sharpened, threshold1=30, threshold2=90)
+
+    # Apply morphological closing to connect broken edges
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+
+    # Focus on central face region
+    height, width = closed_edges.shape
+    face_mask = np.zeros((height, width), dtype=np.uint8)
+    face_center = (int(width / 2), int(height / 2))
+    face_width, face_height = int(width * 0.5), int(height * 0.7)
+    cv2.rectangle(
+        face_mask,
+        (face_center[0] - face_width // 2, face_center[1] - face_height // 2),
+        (face_center[0] + face_width // 2, face_center[1] + face_height // 2),
+        255,
+        thickness=cv2.FILLED,
+    )
+
+    # Apply the face mask to keep only edges in the facial region
+    focused_edges = cv2.bitwise_and(closed_edges, closed_edges, mask=face_mask)
+
+    # Filter small and irrelevant contours
+    contours, _ = cv2.findContours(focused_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    mask = np.zeros((height, width), dtype=np.uint8)
+    for contour in contours:
+        if 50 < cv2.contourArea(contour) < 3000:  # Keep medium-sized contours
+            cv2.drawContours(mask, [contour], -1, 255, thickness=1)
+
+    # Invert the image for white background and black features
+    final_output = cv2.bitwise_not(mask)
 
     # Save the processed image
-    cv2.imwrite(processed_path, inverted_edges)
+    cv2.imwrite(processed_path, final_output)
+
 
 
 
