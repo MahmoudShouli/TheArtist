@@ -69,21 +69,22 @@ def shoot():
     sharpened = cv2.filter2D(smoothed, -1, sharpen_kernel)
 
     # Apply Canny edge detection
-    edges = cv2.Canny(sharpened, threshold1=50, threshold2=150)
+    edges = cv2.Canny(sharpened, threshold1=50, threshold2=120)
 
-    # Apply morphological closing to connect broken edges
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    # Apply morphological closing with a smaller kernel
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
     closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
 
-    # Find and filter contours based on size
+    # Find and filter contours to avoid filling large regions
     contours, _ = cv2.findContours(closed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     height, width = closed_edges.shape
     mask = np.zeros((height, width), dtype=np.uint8)
 
-    # Include smaller contours
+    # Include only medium-sized contours
     for contour in contours:
-        if cv2.contourArea(contour) > 30:  # Lowered area threshold to include more details
-            cv2.drawContours(mask, [contour], -1, 255, thickness=cv2.FILLED)
+        area = cv2.contourArea(contour)
+        if 50 < area < 5000:  # Filter out very small and very large contours
+            cv2.drawContours(mask, [contour], -1, 255, thickness=1)
 
     # Invert the image for white background and black edges
     final_output = cv2.bitwise_not(mask)
