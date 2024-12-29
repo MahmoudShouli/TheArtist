@@ -53,7 +53,7 @@ def shoot():
 
     # Apply the mask to retain only the subject
     foreground = cv2.bitwise_and(image, image, mask=mask_inv)
-    
+
     # Convert to grayscale for edge detection
     gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
@@ -61,35 +61,18 @@ def shoot():
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     enhanced = clahe.apply(gray)
 
-    # Apply bilateral filtering for noise reduction while preserving edges
-    smoothed = cv2.bilateralFilter(enhanced, d=9, sigmaColor=50, sigmaSpace=50)
+    # Apply Gaussian blur for slight noise reduction
+    blurred = cv2.GaussianBlur(enhanced, (5, 5), 0)
 
-    # Sharpen the image to emphasize key details
-    sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
-    sharpened = cv2.filter2D(smoothed, -1, sharpen_kernel)
+    # Apply Canny edge detection with lower thresholds
+    edges = cv2.Canny(blurred, threshold1=20, threshold2=60)
 
-    # Apply refined Canny edge detection for more prominent features
-    edges = cv2.Canny(sharpened, threshold1=30, threshold2=100)
-
-    # Morphological closing to connect broken edges
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
-
-    # Filter contours to prioritize key facial features
-    contours, _ = cv2.findContours(closed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    height, width = closed_edges.shape
-    mask = np.zeros((height, width), dtype=np.uint8)
-
-    # Retain contours that correspond to key features
-    for contour in contours:
-        if 100 < cv2.contourArea(contour) < 3000:  # Filter to keep medium-sized contours
-            cv2.drawContours(mask, [contour], -1, 255, thickness=1)
-
-    # Invert the image for a white background and black features
-    final_output = cv2.bitwise_not(mask)
+    # Invert the edges for a white background and black features
+    inverted_edges = cv2.bitwise_not(edges)
 
     # Save the processed image
-    cv2.imwrite(processed_path, final_output)
+    cv2.imwrite(processed_path, inverted_edges)
+
 
 
 
