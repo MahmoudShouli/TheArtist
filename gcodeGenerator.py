@@ -11,7 +11,7 @@ os.makedirs(GCODE_FOLDER, exist_ok=True)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('simple.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
