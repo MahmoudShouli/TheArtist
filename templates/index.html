@@ -58,7 +58,8 @@
         <form method="POST" action="/shoot">
             <button type="submit">Reshoot</button>
         </form>
-        <form method="POST" action="/generate_gcode">
+        <form method="POST" action="/upload">
+            <input type="file" name="file" accept="image/*" required>
             <button type="submit">Generate G-code</button>
         </form>
     {% else %}
