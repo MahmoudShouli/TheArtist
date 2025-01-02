@@ -53,8 +53,11 @@
             font-size: 14px;
             cursor: pointer;
         }
-        .form-container input[type="checkbox"] {
+        .form-container input[type="radio"] {
             margin-right: 10px;
+        }
+        .form-container .option-group {
+            margin-bottom: 20px;
         }
         .form-container button {
             width: 100%;
@@ -90,10 +93,16 @@
     <div class="form-container">
         <form method="POST" action="/start">
             <h3>Options</h3>
-            <label><input type="checkbox" name="pageSize" value="A4"> Page Size: A4</label>
-            <label><input type="checkbox" name="pageSize" value="A3"> Page Size: A3</label>
-            <label><input type="checkbox" name="penColor" value="Blue"> Pen Color: Blue</label>
-            <label><input type="checkbox" name="penColor" value="Red"> Pen Color: Red</label>
+            <div class="option-group">
+                <span>Page Size:</span>
+                <label><input type="radio" name="pageSize" value="A4"> A4</label>
+                <label><input type="radio" name="pageSize" value="A3"> A3</label>
+            </div>
+            <div class="option-group">
+                <span>Pen Color:</span>
+                <label><input type="radio" name="penColor" value="Blue"> Blue</label>
+                <label><input type="radio" name="penColor" value="Red"> Red</label>
+            </div>
             <button type="submit">Start!</button>
         </form>
     </div>

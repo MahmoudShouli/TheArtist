@@ -8,7 +8,7 @@ import time
 app = Flask(__name__)
 
 # Initialize the camera
-picam = Picamera2()
+#picam = Picamera2()
 
 # Directory for storing photos and generated files
 output_dir = "static/photos"
