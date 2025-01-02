@@ -38,18 +38,41 @@
         button:hover {
             background-color: #0056b3;
         }
+        .form-container {
+            margin: 30px auto;
+            max-width: 400px;
+            text-align: left;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .form-container input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .form-container button {
+            width: 100%;
+            background-color: #28a745;
+        }
+        .form-container button:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
     <h1>Raspberry Pi Camera</h1>
     {% if photo_exists %}
         <div class="image-container">
-           
             <div>
                 <h3>Original Photo</h3>
                 <img src="/static/photos/photo.jpg" alt="Original Photo">
             </div>
-            
             <div>
                 <h3>Processed Photo</h3>
                 <img src="/static/photos/processed_photo.jpg" alt="Processed Photo">
@@ -63,5 +86,16 @@
             <button type="submit">Shoot</button>
         </form>
     {% endif %}
+
+    <div class="form-container">
+        <form method="POST" action="/start">
+            <h3>Options</h3>
+            <label><input type="checkbox" name="pageSize" value="A4"> Page Size: A4</label>
+            <label><input type="checkbox" name="pageSize" value="A3"> Page Size: A3</label>
+            <label><input type="checkbox" name="penColor" value="Blue"> Pen Color: Blue</label>
+            <label><input type="checkbox" name="penColor" value="Red"> Pen Color: Red</label>
+            <button type="submit">Start!</button>
+        </form>
+    </div>
 </body>
 </html>
