@@ -31,10 +31,7 @@ def index():
 
 @app.route('/shoot', methods=['POST'])
 def shoot():
-    time.sleep(5)  # Allow some time for setup
     global photo_path, processed_path
-
-    # Capture the image
     picam.start()
     picam.capture_file(photo_path)
     picam.stop()
@@ -54,55 +51,38 @@ def shoot():
     # Apply the mask to retain only the subject
     foreground = cv2.bitwise_and(image, image, mask=mask_inv)
 
+    # Ensure the subject remains visible (no blank areas)
+    background = np.zeros_like(image)  # Black background
+    combined = cv2.add(foreground, background)
+
     # Convert to grayscale for edge detection
-    gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(combined, cv2.COLOR_BGR2GRAY)
 
-    # Apply CLAHE to enhance contrast
-    clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
-    enhanced = clahe.apply(gray)
+    # Apply Gaussian blur to reduce noise
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # Apply Gaussian blur to smooth out noise while preserving edges
-    blurred = cv2.GaussianBlur(enhanced, (3, 3), 0)
+    # Apply sharpening to enhance edges
+    sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+    sharpened = cv2.filter2D(blurred, -1, sharpen_kernel)
 
-    # Apply Canny edge detection with tighter thresholds
-    edges = cv2.Canny(blurred, threshold1=70, threshold2=150)
-
-    # Apply morphological closing to connect broken edges
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-    closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
-
-    # Focus on only the facial area by masking the region
-    height, width = closed_edges.shape
-    mask = np.zeros((height, width), dtype=np.uint8)
-    face_region = cv2.rectangle(
-        mask,
-        (int(width * 0.25), int(height * 0.2)),
-        (int(width * 0.75), int(height * 0.8)),
-        255,
-        thickness=cv2.FILLED,
+    # Apply adaptive thresholding for edge detection
+    edges = cv2.adaptiveThreshold(
+        sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
     )
-    focused_edges = cv2.bitwise_and(closed_edges, closed_edges, mask=mask)
 
-    # Invert the image for a white background and black features
-    final_output = cv2.bitwise_not(focused_edges)
+    # Remove small dots/noise using contour filtering
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for contour in contours:
+        if cv2.contourArea(contour) < 150:  # Increased area threshold
+            cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
 
-    # Save the processed image
-    cv2.imwrite(processed_path, final_output)
+    # Apply median blur to further clean noise
+    cleaned_edges = cv2.medianBlur(edges, 5)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # Save the cleaned image
+    cv2.imwrite(processed_path, cleaned_edges)
     return render_template('index.html', photo_exists=True)
+
 
 def generate_gcode_from_image(image_path, gcode_path):
     # Load the processed image
