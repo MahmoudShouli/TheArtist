@@ -3,11 +3,11 @@
 #define IN1A3 8  
 #define IN2A3 9  
 
+
 // DC Motor A4 pins
 #define ENA4 11  
-#define IN1A4 6 
-#define IN2A4 7
-
+#define IN1A4 6  
+#define IN2A4 7  
 
 // Stepper Motor Roll pins
 #define rollStep 48
@@ -15,23 +15,25 @@
 #define rollEn 46
 #define motorDir LOW
 
+// A4 Feeder IR pin
+#define A4_F_IR 2
 
-// A3 Feeder IR pins
-#define A3_F_IR 2
-
-// A4 Feeder IR pins
-#define A4_F_IR 3
-
-// A3 Roll IR pins
-#define A3_R_IR 4
-
-// A4 Roll IR pins
+// A4 Feeder IR pin
 #define A4_R_IR 5
 
-void setup() {
+// A3 Feeder IR pin
+#define A3_F_IR 3
 
-  Serial.begin(9600); 
-  
+// A3 Roll IR pin
+#define A3_R_IR 4
+
+// Stepper motor parameters
+const unsigned long stepInterval = 500; // Time between steps (microseconds)
+unsigned long previousStepTime = 0;
+
+void setup() {
+  Serial.begin(9600);
+
   // DC Motor A3 config
   pinMode(ENA3, OUTPUT);
   pinMode(IN1A3, OUTPUT);
@@ -47,78 +49,176 @@ void setup() {
   pinMode(rollDir, OUTPUT);
   pinMode(rollEn, OUTPUT);
 
-  // IRs' congig
+  // IR sensors config
   pinMode(A3_F_IR, INPUT);
-  pinMode(A4_F_IR, INPUT);
   pinMode(A3_R_IR, INPUT);
   pinMode(A4_R_IR, INPUT);
 
 
   // Initialize motor direction and enable the motor driver
   digitalWrite(rollDir, motorDir);
-  digitalWrite(rollEn, HIGH); // disable the stepper motor driver (active LOW)
-  
-
+  digitalWrite(rollEn, HIGH); // Disable the stepper motor driver (active LOW)
 }
 
 void loop() {
-  // Check the IR roll sensors
-  bool a3Detected = digitalRead(A3_R_IR);
-  bool a4Detected = digitalRead(A4_R_IR);
-  if (Serial.available() > 0) {
-    String command = Serial.readStringUntil('\n'); // Read the command
 
-    if(digitalRead(A3_F_IR) == HIGH || digitalRead(A4_F_IR) == HIGH) {
+  if(Serial.available() > 0) {
+  
+    // Command to activate A3
+    String command = Serial.readStringUntil('\n'); // Read the command
+    command.trim(); // Remove any trailing newline characters
+
+    if (command == "A3") {
+
+      // Check if paper is present in the feeder
+      if (digitalRead(A3_F_IR) == HIGH ) {
         Serial.println("There's no paper!");
         delay(500);
-    } else {
+        return; // Skip the rest of the loop
+      }
 
-        if (command == "A3") {
-            // DC Motor A3: Forward at max speed
-            analogWrite(ENA3, 255); 
-            digitalWrite(IN1A3, HIGH);
-            digitalWrite(IN2A3, LOW);
-            delay(12000); // Run for 12 seconds
-            analogWrite(ENA3, 0); // Stop motor
-            digitalWrite(rollEn, LOW); // enable the stepper motor driver (active LOW)
-            
-            if ( a3Detected == LOW) { // Assuming HIGH means white paper detected
-              digitalWrite(rollEn, HIGH); // Disable the motor driver (active LOW)
-              Serial.println("motor stops");
-              return; // Exit the loop and stop further motor steps
-            }
+      unsigned long startTime = millis(); // Record the start time
+      bool stepperStarted = false; // Flag to indicate when the stepper motor starts
 
-        } 
-        else if (command == "A4") {
-            // DC Motor A4: Forward at 100% speed
-            analogWrite(ENA4, 255); 
-            digitalWrite(IN1A4, HIGH);
-            digitalWrite(IN2A4, LOW);
-            delay(8000); // Run for 8 seconds
-            analogWrite(ENA4, 0); // Stop motor
-            digitalWrite(rollEn, LOW); // enable the stepper motor driver (active LOW)
+      // Start DC Motor A3: Forward at max speed
+      analogWrite(ENA3, 255);
+      digitalWrite(IN1A3, HIGH);
+      digitalWrite(IN2A3, LOW);
 
-            if ( a4Detected == LOW) { // Assuming HIGH means white paper detected
-              digitalWrite(rollEn, HIGH); // Disable the motor driver (active LOW)
-              Serial.println("motor stops");
-              return; // Exit the loop and stop further motor steps
-            }
+      Serial.println("DC motor started...");
+
+      // Handle DC motor runtime and stepper motor activation
+      while (millis() - startTime < 17000) {
+        unsigned long elapsedTime = millis() - startTime;
+
+        // Start stepper motor at 7 seconds
+        if (!stepperStarted && elapsedTime >= 7000) {
+          Serial.println("Starting stepper motor...");
+          digitalWrite(rollEn, LOW); // Enable stepper motor
+          stepperStarted = true;
         }
 
-        // Get the current time
-        unsigned long currentTime = micros();
+        // Generate step pulses for the stepper motor if started
+        if (stepperStarted) {
+          unsigned long currentTime = micros();
+          if (currentTime - previousStepTime >= stepInterval) {
+            previousStepTime = currentTime;
 
-        // Non-blocking stepper control
-        if (currentTime - previousStepTime >= stepInterval) {
-          previousStepTime = currentTime;
+            // Generate a step pulse
+            digitalWrite(rollStep, HIGH);
+            delayMicroseconds(10); // Short pulse to ensure the driver detects the step
+            digitalWrite(rollStep, LOW);
+          }
+        }
+      }
 
-          // Generate a step pulse
-          digitalWrite(rollStep, HIGH);
-          delayMicroseconds(10); // Short pulse to ensure the driver detects the step
-          digitalWrite(rollStep, LOW);
-        }        
+      // Stop the DC motor after 17 seconds
+      Serial.println("Stopping DC motor...");
+      analogWrite(ENA3, 0);
+      digitalWrite(IN1A3, LOW);
+      digitalWrite(IN2A3, LOW);
 
+      // Independent loop for stepper motor
+      if (stepperStarted) {
+        Serial.println("Stepper motor continues independently...");
+        while (true) {
+          // Generate step pulses for the stepper motor
+          unsigned long currentTime = micros();
+          if (currentTime - previousStepTime >= stepInterval) {
+            previousStepTime = currentTime;
+
+            // Generate a step pulse
+            digitalWrite(rollStep, HIGH);
+            delayMicroseconds(10); // Short pulse to ensure the driver detects the step
+            digitalWrite(rollStep, LOW);
+          }
+
+          // Stop stepper motor when paper is detected
+          if (digitalRead(A3_R_IR) == LOW) {
+            Serial.println("Paper detected, stopping stepper motor.");
+            digitalWrite(rollEn, HIGH); // Disable the motor driver
+            break; // Exit the loop after stepper stops
+          }
+        }
+      }
+
+      Serial.println("Process complete.");
     }
-    
+    else if (command == "A4") {
+
+      // Check if paper is present in the feeder
+      if ( digitalRead(A4_F_IR) == HIGH ) {
+        Serial.println("There's no paper!");
+        delay(500);
+        return; // Skip the rest of the loop
+      }
+
+      unsigned long startTime = millis(); // Record the start time
+      bool stepperStarted = false; // Flag to indicate when the stepper motor starts
+
+      // Start DC Motor A4: Forward at max speed
+      analogWrite(ENA4, 255);
+      digitalWrite(IN1A4, HIGH);
+      digitalWrite(IN2A4, LOW);
+
+      Serial.println("DC motor started...");
+
+      // Handle DC motor runtime and stepper motor activation
+      while (millis() - startTime < 17000) {
+        unsigned long elapsedTime = millis() - startTime;
+
+        // Start stepper motor at 7 seconds
+        if (!stepperStarted && elapsedTime >= 7000) {
+          Serial.println("Starting stepper motor...");
+          digitalWrite(rollEn, LOW); // Enable stepper motor
+          stepperStarted = true;
+        }
+
+        // Generate step pulses for the stepper motor if started
+        if (stepperStarted) {
+          unsigned long currentTime = micros();
+          if (currentTime - previousStepTime >= stepInterval) {
+            previousStepTime = currentTime;
+
+            // Generate a step pulse
+            digitalWrite(rollStep, HIGH);
+            delayMicroseconds(10); // Short pulse to ensure the driver detects the step
+            digitalWrite(rollStep, LOW);
+          }
+        }
+      }
+
+      // Stop the DC motor after 17 seconds
+      Serial.println("Stopping DC motor...");
+      analogWrite(ENA4, 0);
+      digitalWrite(IN1A4, LOW);
+      digitalWrite(IN2A4, LOW);
+
+      // Independent loop for stepper motor
+      if (stepperStarted) {
+        Serial.println("Stepper motor continues independently...");
+        while (true) {
+          // Generate step pulses for the stepper motor
+          unsigned long currentTime = micros();
+          if (currentTime - previousStepTime >= stepInterval) {
+            previousStepTime = currentTime;
+
+            // Generate a step pulse
+            digitalWrite(rollStep, HIGH);
+            delayMicroseconds(10); // Short pulse to ensure the driver detects the step
+            digitalWrite(rollStep, LOW);
+          }
+
+          // Stop stepper motor when paper is detected
+          if (digitalRead(A4_R_IR) == LOW) {
+            Serial.println("Paper detected, stopping stepper motor.");
+            digitalWrite(rollEn, HIGH); // Disable the motor driver
+            break; // Exit the loop after stepper stops
+          }
+        }
+      }
+
+      Serial.println("Process complete.");
+    }
   }
 }
