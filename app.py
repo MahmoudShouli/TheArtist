@@ -39,7 +39,7 @@ def start():
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Red'
 
-    if ( page_size == 'A3') {
+    if  page_size == 'A3' :
         if ser is None:
             return "Error: Arduino not connected."
         try:
@@ -47,8 +47,8 @@ def start():
             print("Sent to Arduino: A3")  # Debug log
         except Exception as e:
             print(f"Error: {e}")
-    }
-    elif ( page_size == 'A4') {
+    
+    elif page_size == 'A4' : 
         if ser is None:
             return "Error: Arduino not connected."
         try:
@@ -56,7 +56,7 @@ def start():
             print("Sent to Arduino: A4")  # Debug log
         except Exception as e:
             print(f"Error: {e}")
-    }
+    
 
     return redirect(url_for('index'))  # Redirect back to the main page
 
