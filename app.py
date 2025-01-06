@@ -33,9 +33,9 @@ except Exception as e:
 def index():
     return render_template('index.html', photo_exists=os.path.exists(processed_path))
 
-@app.route('/start')
+@app.route('/start', methods=['POST'])
 def start():
-     # Retrieve the selected options from the form
+    # Retrieve the selected options from the form
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Red'
 
