@@ -20,6 +20,7 @@ processed_path = os.path.join(output_dir, "processed_photo.jpg")
 
 # Serial port configuration
 arduino_port = '/dev/ttyACM0'  # Adjust based on your setup
+arduin
 baud_rate = 9600
 try:
     ser = serial.Serial(arduino_port, baud_rate, timeout=1)
@@ -27,7 +28,6 @@ try:
 except Exception as e:
     print(f"Error: {e}")
     ser = None
-
 
 @app.route('/')
 def index():
