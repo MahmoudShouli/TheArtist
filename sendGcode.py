@@ -1,7 +1,7 @@
 import serial
 import time
 
-def configure_grbl(serial_port, baud_rate=115200, gcode_commands):
+def configure_grbl(serial_port, gcode_commands,baud_rate=115200):
     """
     Configures GRBL settings by sending $ commands to the Arduino and sends a group of G-code commands.
 
