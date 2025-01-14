@@ -25,5 +25,5 @@ try:
                 print(f"Sent G-code: {command}")
                 print(ser2.readline().decode('utf-8').strip())  # Read GRBL response
 
-    except Exception as e:
+except Exception as e:
         print(f"Error: {e}")
