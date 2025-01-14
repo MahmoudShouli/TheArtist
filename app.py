@@ -25,7 +25,7 @@ os.makedirs(output_dir, exist_ok=True)
 photo_path = os.path.join(output_dir, "photo.jpg")
 processed_path = os.path.join(output_dir, "processed_photo.jpg")
 
-*-
+
 # Serial port configuration
 mega = '/dev/ttyACM0'  # Adjust based on your setup
 uno = '/dev/ttyACM1'
