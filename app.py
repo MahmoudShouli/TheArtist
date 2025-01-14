@@ -5,11 +5,19 @@ import numpy as np
 import os
 import time
 import serial
+from sendGcode import configure_grbl
 
 app = Flask(__name__)
 
+
 # Initialize the camera
 #picam = Picamera2()
+
+#import gcode files
+with open('blackPen.gcode', 'r') as f:
+    black_pen_gcode = f.readlines()  # Read lines into array
+with open('bluePen.gcode', 'r') as f:
+    blue_pen_gcode = f.readlines()  # Read lines into array
 
 # Directory for storing photos and generated files
 output_dir = "static/photos"
@@ -17,16 +25,17 @@ os.makedirs(output_dir, exist_ok=True)
 photo_path = os.path.join(output_dir, "photo.jpg")
 processed_path = os.path.join(output_dir, "processed_photo.jpg")
 
-
+*-
 # Serial port configuration
-arduino_port = '/dev/ttyACM0'  # Adjust based on your setup
+mega = '/dev/ttyACM0'  # Adjust based on your setup
+uno = '/dev/ttyACM1'
 baud_rate = 9600
 try:
-    ser = serial.Serial(arduino_port, baud_rate, timeout=1)
-    print(f"Connected to Arduino on {arduino_port}")
+    ser1 = serial.Serial(mega, baud_rate, timeout=1)
+    print(f"Connected to Arduino on {mega}")
 except Exception as e:
     print(f"Error: {e}")
-    ser = None
+    ser1 = None
 
 @app.route('/')
 def index():
@@ -38,20 +47,27 @@ def start():
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Black'
 
+    if  pen_color == 'Blue' :
+        configure_grbl(uno, blue_pen_gcode)
+
+    elif pen_color == 'Black':
+        configure_grbl(uno, black_pen_gcode)
+
+
     if  page_size == 'A3' :
-        if ser is None:
-            return "Error: Arduino not connected."
+        if ser1 is None:
+            return "Error: Mega not connected."
         try:
-            ser.write('A3\n'.encode())  # Send text to Arduino
+            ser1.write('A3\n'.encode())  # Send text to Mega
             print("Sent to Arduino: A3")  # Debug log
         except Exception as e:
             print(f"Error: {e}")
     
     elif page_size == 'A4' : 
-        if ser is None:
-            return "Error: Arduino not connected."
+        if ser1 is None:
+            return "Error: Mega not connected."
         try:
-            ser.write('A4\n'.encode())  # Send text to Arduino
+            ser1.write('A4\n'.encode())  # Send text to Mega
             print("Sent to Arduino: A4")  # Debug log
         except Exception as e:
             print(f"Error: {e}")
