@@ -20,7 +20,6 @@ processed_path = os.path.join(output_dir, "processed_photo.jpg")
 
 # Serial port configuration
 arduino_port = '/dev/ttyACM0'  # Adjust based on your setup
-arduin
 baud_rate = 9600
 try:
     ser = serial.Serial(arduino_port, baud_rate, timeout=1)
@@ -37,7 +36,7 @@ def index():
 def start():
     # Retrieve the selected options from the form
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
-    pen_color = request.form.get('penColor')  # 'Blue' or 'Red'
+    pen_color = request.form.get('penColor')  # 'Blue' or 'Black'
 
     if  page_size == 'A3' :
         if ser is None:

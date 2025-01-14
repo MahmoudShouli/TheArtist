@@ -50,6 +50,6 @@ def centerline_trace(image_path, output_path):
     plt.show()
 
 # Example usage
-input_image_path = "apple.jpg"  # Replace with your input image path
+input_image_path = "face.jpg"  # Replace with your input image path
 output_image_path = "center.jpg"  # Replace with your output image path
 centerline_trace(input_image_path, output_image_path)
