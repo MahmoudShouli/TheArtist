@@ -43,7 +43,7 @@ gcode_commands_blue = [
     "M3 S150"           # Move back to origin
 ]
 
-isPenFinished = false
+isPenFinished = False
 
 # Directory for storing photos and generated files
 output_dir = "static/photos"
