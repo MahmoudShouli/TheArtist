@@ -76,7 +76,7 @@ def configure_grbl(serial_port, baud_rate=115200):
             print(response)
 
             # Array of G-code commands to send
-            gcode_commands = [
+            gcode_commands_black = [
                 "G10 L20 P1 X0 Y0 Z0",  # Set current position as origin
                 "G90",                  # Set absolute positioning
                 "G00 Y39",              # Move to Y39
@@ -88,9 +88,23 @@ def configure_grbl(serial_port, baud_rate=115200):
                 "G00 X0 Y0"             # Move back to origin
             ]
 
+             # Array of G-code commands to send
+            gcode_commands_blue = [
+                "G10 L20 P1 X0 Y0 Z0",  # Set current position as origin
+                "G90",                  # Set absolute positioning
+                "G00 Y68",              # Move to Y39
+                "G00 X300",             # Move to X300
+                "G00 Z4.5",             # Move to Z4.5
+                "G00 X308",             # Move to X308
+                "M3 S0",                # Turn spindle off
+                "G00 Z0",               # Move Z to 0
+                "G00 X0 Y0",
+                "M3 S150"           # Move back to origin
+            ]
+
             # Send G-code commands
             print("\nSending G-code commands:")
-            for command in gcode_commands:
+            for command in gcode_commands_blue:
                 ser.write((command + "\n").encode('utf-8'))
                 print(f"Sent G-code: {command}")
                 while True:
