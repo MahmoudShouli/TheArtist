@@ -3,7 +3,7 @@ import time
 
 def configure_grbl(serial_port, baud_rate=115200):
     """
-    Configures GRBL settings by sending $ commands to the Arduino and allows manual G-code input.
+    Configures GRBL settings by sending $ commands to the Arduino and then sends a predefined array of G-code commands.
 
     Parameters:
         serial_port (str): Serial port of the Arduino (e.g., /dev/ttyUSB0).
@@ -51,8 +51,8 @@ def configure_grbl(serial_port, baud_rate=115200):
                 "$100=39.000", # X-axis travel resolution, step/mm
                 "$101=68.200", # Y-axis travel resolution, step/mm
                 "$102=400.000",# Z-axis travel resolution, step/mm
-                "$110=1500.000",# X-axis maximum rate, mm/min
-                "$111=1500.000",# Y-axis maximum rate, mm/min
+                "$110=2000.000",# X-axis maximum rate, mm/min
+                "$111=2000.000",# Y-axis maximum rate, mm/min
                 "$112=300.000",# Z-axis maximum rate, mm/min
                 "$120=40.000", # X-axis acceleration, mm/sec^2
                 "$121=40.000", # Y-axis acceleration, mm/sec^2
@@ -75,15 +75,24 @@ def configure_grbl(serial_port, baud_rate=115200):
             print("Updated GRBL Settings:")
             print(response)
 
-            # Enter manual G-code input loop
-            print("\nEnter G-code commands (type 'exit' to quit):")
-            while True:
-                command = input("G-code> ")  # Get G-code command from terminal
-                if command.lower() == 'exit':  # Exit the loop if 'exit' is typed
-                    print("Exiting...")
-                    break
-                ser.write((command + "\n").encode('utf-8'))  # Send G-code to Arduino
-                time.sleep(0.1)
+            # Array of G-code commands to send
+            gcode_commands = [
+                "G10 L20 P1 X0 Y0 Z0",  # Set current position as origin
+                "G90",                  # Set absolute positioning
+                "G00 Y39",              # Move to Y39
+                "G00 X300",             # Move to X300
+                "G00 Z4.5",             # Move to Z4.5
+                "G00 X308",             # Move to X308
+                "M3 S0",                # Turn spindle off
+                "G00 Z0",               # Move Z to 0
+                "G00 X0 Y0"             # Move back to origin
+            ]
+
+            # Send G-code commands
+            print("\nSending G-code commands:")
+            for command in gcode_commands:
+                ser.write((command + "\n").encode('utf-8'))
+                time.sleep(0.1)  # Wait for GRBL to process the command
                 print(f"Sent G-code: {command}")
                 print(ser.readline().decode('utf-8').strip())  # Read GRBL response
 
