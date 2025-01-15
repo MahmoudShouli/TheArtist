@@ -13,11 +13,35 @@ app = Flask(__name__)
 # Initialize the camera
 #picam = Picamera2()
 
-#import gcode files
-with open('blackPen.gcode', 'r') as f:
-    black_pen_gcode = f.readlines()  # Read lines into array
-with open('bluePen.gcode', 'r') as f:
-    blue_pen_gcode = f.readlines()  # Read lines into array
+# Array of G-code commands to send
+gcode_commands_black = [
+    "G10 L20 P1 X0 Y0 Z0",  # Set current position as origin
+    "G90",
+    "M3 S150",                 
+    "G00 Y39",              # Move to Y39
+    "G00 X300",             # Move to X300
+    "G00 Z4.5",             # Move to Z4.5
+    "G00 X308",             # Move to X308
+    "M3 S0",                # Turn spindle off
+    "G00 Z0",               # Move Z to 0
+    "G00 X0 Y0",
+    "M3 S150"           # Move back to origin
+]
+
+    # Array of G-code commands to send
+gcode_commands_blue = [
+    "G10 L20 P1 X0 Y0 Z0",  # Set current position as origin
+    "G90",                  # Set absolute positioning
+    "M3 S150", 
+    "G00 Y68",              # Move to Y39
+    "G00 X300",             # Move to X300
+    "G00 Z4.5",             # Move to Z4.5
+    "G00 X308",             # Move to X308
+    "M3 S0",                # Turn spindle off
+    "G00 Z0",               # Move Z to 0
+    "G00 X0 Y0",
+    "M3 S150"           # Move back to origin
+]
 
 # Directory for storing photos and generated files
 output_dir = "static/photos"
@@ -27,15 +51,15 @@ processed_path = os.path.join(output_dir, "processed_photo.jpg")
 
 
 # Serial port configuration
-mega = '/dev/ttyACM0'  # Adjust based on your setup
-uno = '/dev/ttyACM1'
-baud_rate = 9600
+mega = '/dev/ttyACM1'  # Adjust based on your setup
+uno = '/dev/ttyACM0'
+
 try:
-    ser1 = serial.Serial(mega, baud_rate, timeout=1)
+    serMega = serial.Serial(mega, baud_rate, timeout=1)
     print(f"Connected to Arduino on {mega}")
 except Exception as e:
     print(f"Error: {e}")
-    ser1 = None
+    serMega = None
 
 @app.route('/')
 def index():
@@ -48,26 +72,26 @@ def start():
     pen_color = request.form.get('penColor')  # 'Blue' or 'Black'
 
     if  pen_color == 'Blue' :
-        configure_grbl(uno, blue_pen_gcode)
+        configure_grbl(uno, gcode_commands_blue)
 
     elif pen_color == 'Black':
-        configure_grbl(uno, black_pen_gcode)
+        configure_grbl(uno, gcode_commands_black)
 
 
     if  page_size == 'A3' :
-        if ser1 is None:
+        if serMega is None:
             return "Error: Mega not connected."
         try:
-            ser1.write('A3\n'.encode())  # Send text to Mega
+            serMega.write('A3\n'.encode())  # Send text to Mega
             print("Sent to Arduino: A3")  # Debug log
         except Exception as e:
             print(f"Error: {e}")
     
     elif page_size == 'A4' : 
-        if ser1 is None:
+        if serMega is None:
             return "Error: Mega not connected."
         try:
-            ser1.write('A4\n'.encode())  # Send text to Mega
+            serMega.write('A4\n'.encode())  # Send text to Mega
             print("Sent to Arduino: A4")  # Debug log
         except Exception as e:
             print(f"Error: {e}")
