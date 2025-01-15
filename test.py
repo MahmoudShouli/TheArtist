@@ -27,15 +27,7 @@ def configure_grbl(serial_port, baud_rate=115200):
             
             # Send the sequence of G-code commands
             gcode_commands = [
-                "G10 L20 P1 X0 Y0 Z0",      # Move to Y39
-                "G90",     # Move to X300
-                "M3 S150"
-                "G0 y39",     # Move to Z4.5
-                "G00 Z4.5",     # Move to X308
-                "g00 x308",        # Turn spindle off
-                "M3 S0"
-                "g00 z0"
-                "g00 x0 y0"     # Move back to the origin (0,0)
+              "g00 x0 y0"    
             ]
             
             for command in gcode_commands:
