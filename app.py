@@ -57,7 +57,7 @@ mega = '/dev/ttyACM1'  # Adjust based on your setup
 uno = '/dev/ttyACM0'
 
 try:
-    serMega = serial.Serial(mega, baud_rate, timeout=1)
+    serMega = serial.Serial(mega, 9600, timeout=1)
     print(f"Connected to Arduino on {mega}")
 except Exception as e:
     print(f"Error: {e}")
