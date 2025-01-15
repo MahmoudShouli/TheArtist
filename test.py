@@ -92,9 +92,13 @@ def configure_grbl(serial_port, baud_rate=115200):
             print("\nSending G-code commands:")
             for command in gcode_commands:
                 ser.write((command + "\n").encode('utf-8'))
-                time.sleep(0.1)  # Wait for GRBL to process the command
                 print(f"Sent G-code: {command}")
-                print(ser.readline().decode('utf-8').strip())  # Read GRBL response
+                while True:
+                    response = ser.readline().decode('utf-8').strip()
+                    if response:
+                        print(response)
+                    if response == "ok":
+                        break
 
     except Exception as e:
         print(f"Error: {e}")
