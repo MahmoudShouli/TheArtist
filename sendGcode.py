@@ -91,5 +91,6 @@ def configure_grbl(serial_port, gArray, baud_rate=115200):
     except Exception as e:
         print(f"Error: {e}")
 
-
+    print("All commands completed successfully")
+    return True
 

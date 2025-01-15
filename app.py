@@ -43,6 +43,8 @@ gcode_commands_blue = [
     "M3 S150"           # Move back to origin
 ]
 
+isPenFinished = false
+
 # Directory for storing photos and generated files
 output_dir = "static/photos"
 os.makedirs(output_dir, exist_ok=True)
@@ -67,18 +69,22 @@ def index():
 
 @app.route('/start', methods=['POST'])
 def start():
+
+    global isPenFinished
     # Retrieve the selected options from the form
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Black'
 
     if  pen_color == 'Blue' :
-        configure_grbl(uno, gcode_commands_blue)
+        isPenFinished = configure_grbl(uno, gcode_commands_blue)
+        
 
     elif pen_color == 'Black':
-        configure_grbl(uno, gcode_commands_black)
+        isPenFinished = configure_grbl(uno, gcode_commands_black)
+    
 
 
-    if  page_size == 'A3' :
+    if  page_size == 'A3' and isPenFinished:
         if serMega is None:
             return "Error: Mega not connected."
         try:
@@ -87,7 +93,7 @@ def start():
         except Exception as e:
             print(f"Error: {e}")
     
-    elif page_size == 'A4' : 
+    elif page_size == 'A4' and isPenFinished: 
         if serMega is None:
             return "Error: Mega not connected."
         try:
