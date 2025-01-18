@@ -145,7 +145,7 @@ def shoot():
 
     # Apply adaptive thresholding for edge detection
     edges = cv2.adaptiveThreshold(
-        sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+        sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 9, 4
     )
 
     # Remove small dots/noise using contour filtering
@@ -154,15 +154,12 @@ def shoot():
         if cv2.contourArea(contour) < 200:  # Increased area threshold
             cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
 
-    # Apply dilation to connect broken lines
+    # Apply morphological closing to connect broken lines
     kernel = np.ones((3, 3), np.uint8)
-    dilated = cv2.dilate(edges, kernel, iterations=1)
-
-    # Apply erosion to refine the dilated edges
-    eroded = cv2.erode(dilated, kernel, iterations=1)
+    closed = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
 
     # Apply median blur to further clean noise
-    cleaned_edges = cv2.medianBlur(eroded, 5)
+    cleaned_edges = cv2.medianBlur(closed, 5)
 
     # Apply slight Gaussian blur for smoother edges
     final_output = cv2.GaussianBlur(cleaned_edges, (3, 3), 0)
@@ -170,6 +167,7 @@ def shoot():
     # Save the cleaned image
     cv2.imwrite(processed_path, final_output)
     return render_template('index.html', photo_exists=True)
+
 
 
 if __name__ == '__main__':
