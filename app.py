@@ -119,7 +119,7 @@ def shoot():
 
     # Convert to HSV for better background masking
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([30, 40, 40])  # Loosened green background range
+    lower_green = np.array([30, 35, 35])  # Further relax green-screen range
     upper_green = np.array([90, 255, 255])
     mask = cv2.inRange(hsv, lower_green, upper_green)
 
@@ -133,25 +133,34 @@ def shoot():
     background = np.zeros_like(image)  # Black background
     combined = cv2.add(foreground, background)
 
-    # Convert to grayscale for edge detection
+    # Convert to grayscale
     gray = cv2.cvtColor(combined, cv2.COLOR_BGR2GRAY)
 
     # Apply Gaussian blur to reduce noise
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    blurred = cv2.GaussianBlur(gray, (7, 7), 0)
 
-    # Apply Canny edge detection for better line control
-    edges = cv2.Canny(blurred, threshold1=50, threshold2=150)
+    # Apply adaptive thresholding for initial edge detection
+    adaptive_edges = cv2.adaptiveThreshold(
+        blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5
+    )
+
+    # Apply Canny edge detection to refine details
+    canny_edges = cv2.Canny(blurred, threshold1=30, threshold2=100)
+
+    # Combine adaptive and Canny edges
+    combined_edges = cv2.bitwise_or(adaptive_edges, canny_edges)
 
     # Apply morphological closing to connect broken lines
-    kernel = np.ones((5, 5), np.uint8)  # Larger kernel for stronger closing
-    closed = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
+    kernel = np.ones((5, 5), np.uint8)
+    closed = cv2.morphologyEx(combined_edges, cv2.MORPH_CLOSE, kernel, iterations=3)
 
-    # Apply median blur to further clean noise
-    cleaned_edges = cv2.medianBlur(closed, 5)
+    # Apply median blur to smooth edges
+    final_output = cv2.medianBlur(closed, 7)
 
-    # Save the cleaned image
-    cv2.imwrite(processed_path, cleaned_edges)
+    # Save the processed image
+    cv2.imwrite(processed_path, final_output)
     return render_template('index.html', photo_exists=True)
+
 
 
 
