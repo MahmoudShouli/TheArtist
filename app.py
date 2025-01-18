@@ -109,6 +109,7 @@ def start():
 @app.route('/shoot', methods=['POST'])
 def shoot():
     global photo_path, processed_path
+    time.sleep(3)
     picam.start()
     picam.capture_file(photo_path)
     picam.stop()
