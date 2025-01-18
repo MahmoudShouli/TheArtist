@@ -151,15 +151,26 @@ def shoot():
     # Remove small dots/noise using contour filtering
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
-        if cv2.contourArea(contour) < 150:  # Increased area threshold
+        if cv2.contourArea(contour) < 200:  # Increased area threshold
             cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
 
+    # Apply dilation to connect broken lines
+    kernel = np.ones((3, 3), np.uint8)
+    dilated = cv2.dilate(edges, kernel, iterations=1)
+
+    # Apply erosion to refine the dilated edges
+    eroded = cv2.erode(dilated, kernel, iterations=1)
+
     # Apply median blur to further clean noise
-    cleaned_edges = cv2.medianBlur(edges, 5)
+    cleaned_edges = cv2.medianBlur(eroded, 5)
+
+    # Apply slight Gaussian blur for smoother edges
+    final_output = cv2.GaussianBlur(cleaned_edges, (3, 3), 0)
 
     # Save the cleaned image
-    cv2.imwrite(processed_path, cleaned_edges)
+    cv2.imwrite(processed_path, final_output)
     return render_template('index.html', photo_exists=True)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
