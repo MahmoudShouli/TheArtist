@@ -119,7 +119,7 @@ def shoot():
 
     # Convert to HSV for better background masking
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([35, 40, 40])  # Adjust for green background
+    lower_green = np.array([30, 40, 40])  # Loosened green background range
     upper_green = np.array([90, 255, 255])
     mask = cv2.inRange(hsv, lower_green, upper_green)
 
@@ -137,23 +137,22 @@ def shoot():
     gray = cv2.cvtColor(combined, cv2.COLOR_BGR2GRAY)
 
     # Apply Gaussian blur to reduce noise
-    blurred = cv2.GaussianBlur(gray, (7, 7), 0)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # Apply adaptive thresholding for edge detection
-    edges = cv2.adaptiveThreshold(
-        blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5
-    )
+    # Apply Canny edge detection for better line control
+    edges = cv2.Canny(blurred, threshold1=50, threshold2=150)
 
-    # Morphological closing to connect broken lines
-    kernel = np.ones((3, 3), np.uint8)
+    # Apply morphological closing to connect broken lines
+    kernel = np.ones((5, 5), np.uint8)  # Larger kernel for stronger closing
     closed = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    # Apply median blur to reduce noise further
+    # Apply median blur to further clean noise
     cleaned_edges = cv2.medianBlur(closed, 5)
 
     # Save the cleaned image
     cv2.imwrite(processed_path, cleaned_edges)
     return render_template('index.html', photo_exists=True)
+
 
 
 
