@@ -119,8 +119,8 @@ def shoot():
 
     # Convert to HSV for better background masking
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([30, 35, 35])  # Further relax green-screen range
-    upper_green = np.array([90, 255, 255])
+    lower_green = np.array([35, 55, 55])  # Adjust for green background
+    upper_green = np.array([85, 255, 255])
     mask = cv2.inRange(hsv, lower_green, upper_green)
 
     # Invert the mask to focus on the subject (non-green parts)
@@ -133,32 +133,32 @@ def shoot():
     background = np.zeros_like(image)  # Black background
     combined = cv2.add(foreground, background)
 
-    # Convert to grayscale
+    # Convert to grayscale for edge detection
     gray = cv2.cvtColor(combined, cv2.COLOR_BGR2GRAY)
 
     # Apply Gaussian blur to reduce noise
-    blurred = cv2.GaussianBlur(gray, (7, 7), 0)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # Apply adaptive thresholding for initial edge detection
-    adaptive_edges = cv2.adaptiveThreshold(
-        blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5
+    # Apply sharpening to enhance edges
+    sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+    sharpened = cv2.filter2D(blurred, -1, sharpen_kernel)
+
+    # Apply adaptive thresholding for edge detection
+    edges = cv2.adaptiveThreshold(
+        sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
     )
 
-    # Apply Canny edge detection to refine details
-    canny_edges = cv2.Canny(blurred, threshold1=30, threshold2=100)
+    # Remove small dots/noise using contour filtering
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for contour in contours:
+        if cv2.contourArea(contour) < 150:  # Increased area threshold
+            cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
 
-    # Combine adaptive and Canny edges
-    combined_edges = cv2.bitwise_or(adaptive_edges, canny_edges)
+    # Apply median blur to further clean noise
+    cleaned_edges = cv2.medianBlur(edges, 5)
 
-    # Apply morphological closing to connect broken lines
-    kernel = np.ones((5, 5), np.uint8)
-    closed = cv2.morphologyEx(combined_edges, cv2.MORPH_CLOSE, kernel, iterations=3)
-
-    # Apply median blur to smooth edges
-    final_output = cv2.medianBlur(closed, 7)
-
-    # Save the processed image
-    cv2.imwrite(processed_path, final_output)
+    # Save the cleaned image
+    cv2.imwrite(processed_path, cleaned_edges)
     return render_template('index.html', photo_exists=True)
 
 
