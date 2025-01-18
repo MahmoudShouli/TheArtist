@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 
 # Initialize the camera
-#picam = Picamera2()
+picam = Picamera2()
 
 # Array of G-code commands to send
 gcode_commands_black = [
