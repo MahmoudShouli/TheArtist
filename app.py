@@ -119,8 +119,8 @@ def shoot():
 
     # Convert to HSV for better background masking
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([35, 55, 55])  # Adjust for green background
-    upper_green = np.array([85, 255, 255])
+    lower_green = np.array([35, 40, 40])  # Adjust for green background
+    upper_green = np.array([90, 255, 255])
     mask = cv2.inRange(hsv, lower_green, upper_green)
 
     # Invert the mask to focus on the subject (non-green parts)
@@ -137,36 +137,24 @@ def shoot():
     gray = cv2.cvtColor(combined, cv2.COLOR_BGR2GRAY)
 
     # Apply Gaussian blur to reduce noise
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-
-    # Apply sharpening to enhance edges
-    sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
-    sharpened = cv2.filter2D(blurred, -1, sharpen_kernel)
+    blurred = cv2.GaussianBlur(gray, (7, 7), 0)
 
     # Apply adaptive thresholding for edge detection
     edges = cv2.adaptiveThreshold(
-        sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 9, 4
+        blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5
     )
 
-    # Remove small dots/noise using contour filtering
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    for contour in contours:
-        if cv2.contourArea(contour) < 200:  # Increased area threshold
-            cv2.drawContours(edges, [contour], -1, (0, 0, 0), -1)
-
-    # Apply morphological closing to connect broken lines
+    # Morphological closing to connect broken lines
     kernel = np.ones((3, 3), np.uint8)
     closed = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    # Apply median blur to further clean noise
+    # Apply median blur to reduce noise further
     cleaned_edges = cv2.medianBlur(closed, 5)
 
-    # Apply slight Gaussian blur for smoother edges
-    final_output = cv2.GaussianBlur(cleaned_edges, (3, 3), 0)
-
     # Save the cleaned image
-    cv2.imwrite(processed_path, final_output)
+    cv2.imwrite(processed_path, cleaned_edges)
     return render_template('index.html', photo_exists=True)
+
 
 
 
