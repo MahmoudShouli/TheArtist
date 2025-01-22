@@ -58,7 +58,7 @@ def start():
             serMega.write('A3\n'.encode())  
             print("Sent to Arduino: A3")  
             while True:
-                if setMega.in_waiting > 0:
+                if serMega.in_waiting > 0:
                     data = serMega.readline().decode('utf-8').rstrip()
                     if data == 'Paper detected, stopping stepper motor.':
                         isPaperFinished = True
@@ -73,7 +73,7 @@ def start():
             serMega.write('A4\n'.encode())  
             print("Sent to Arduino: A4")  
             while True:
-                if setMega.in_waiting > 0:
+                if serMega.in_waiting > 0:
                     data = serMega.readline().decode('utf-8').rstrip()
                     if data == 'Paper detected, stopping stepper motor.':
                         isPaperFinished = True
