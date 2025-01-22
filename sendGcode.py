@@ -1,7 +1,7 @@
 import serial
 import time
 
-def configure_grbl(serial_port, gArray, baud_rate=115200):
+def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
     """
     Configures GRBL settings by sending $ commands to the Arduino and then sends a predefined array of G-code commands.
 
@@ -62,11 +62,12 @@ def configure_grbl(serial_port, gArray, baud_rate=115200):
                 "$132=10.000", # Z-axis maximum travel, millimeters
             ]
 
-            for setting in settings:
-                serUno.write((setting + "\n").encode('utf-8'))
-                time.sleep(0.1)
-                print(f"Set: {setting}")
-                print(serUno.readline().decode('utf-8').strip())  # Read GRBL response
+            if isSettings:
+                for setting in settings:
+                    serUno.write((setting + "\n").encode('utf-8'))
+                    time.sleep(0.1)
+                    print(f"Set: {setting}")
+                    print(serUno.readline().decode('utf-8').strip())  # Read GRBL response
             
             # Verify updated settings
             serUno.write(b"$$\n")
