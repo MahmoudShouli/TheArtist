@@ -61,7 +61,7 @@ def start():
                 if serMega.in_waiting > 0:
                     data = serMega.readline().decode('utf-8').rstrip()
                     if data == 'Paper detected, stopping stepper motor.':
-                        isPaperFinished = True
+                        isPaperFinished = False
                         break
         except Exception as e:
             print(f"Error: {e}")
@@ -76,7 +76,7 @@ def start():
                 if serMega.in_waiting > 0:
                     data = serMega.readline().decode('utf-8').rstrip()
                     if data == 'Paper detected, stopping stepper motor.':
-                        isPaperFinished = True
+                        isPaperFinished = False
                         break
             
         except Exception as e:
