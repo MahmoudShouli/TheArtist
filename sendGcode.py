@@ -69,12 +69,12 @@ def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
                     print(f"Set: {setting}")
                     print(serUno.readline().decode('utf-8').strip())  # Read GRBL response
             
-            # Verify updated settings
-            serUno.write(b"$$\n")
-            time.sleep(0.1)
-            response = serUno.read_all().decode('utf-8')
-            print("Updated GRBL Settings:")
-            print(response)
+                    # Verify updated settings
+                    serUno.write(b"$$\n")
+                    time.sleep(0.1)
+                    response = serUno.read_all().decode('utf-8')
+                    print("Updated GRBL Settings:")
+                    print(response)
 
 
             # Send G-code commands
