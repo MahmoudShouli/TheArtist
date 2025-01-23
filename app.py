@@ -50,6 +50,7 @@ def start():
         isPenFinished = configure_grbl(uno, gcode_commands_black, True)
     
 
+    isPenFinished = True
 
     if  page_size == 'A3' and isPenFinished:
         if serMega is None:
