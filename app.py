@@ -6,7 +6,7 @@ import os
 import time
 import serial
 from sendGcode import configure_grbl
-from data import gcode_commands_blue, gcode_commands_black, drawing_gcode
+from data import gcode_commands_blue, gcode_commands_black, gcode_drawing
 app = Flask(__name__)
 
 #picam = Picamera2()
@@ -83,7 +83,7 @@ def start():
             print(f"Error: {e}")
 
     if isPaperFinished:
-        configure_grbl(uno, drawing_gcode, False)
+        configure_grbl(uno, gcode_drawing, False)
     
 
     return redirect(url_for('index'))  
