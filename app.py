@@ -82,6 +82,7 @@ def start():
         except Exception as e:
             print(f"Error: {e}")
 
+    print(isPaperFinished)
     if isPaperFinished:
         configure_grbl(uno, drawing_gcode, False)
     
