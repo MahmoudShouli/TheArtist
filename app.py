@@ -9,7 +9,7 @@ from sendGcode import configure_grbl
 from data import gcode_commands_blue, gcode_commands_black, gcode_drawing
 app = Flask(__name__)
 
-#picam = Picamera2()
+picam = Picamera2()
 
 uploaded_gcode_array = []
 isPenFinished = False
