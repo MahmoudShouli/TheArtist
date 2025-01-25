@@ -50,8 +50,6 @@ def start():
         isPenFinished = configure_grbl(uno, gcode_commands_black, True)
     
 
-    isPenFinished = True
-
     if  page_size == 'A3' and isPenFinished:
         if serMega is None:
             return "Error: Mega not connected."
@@ -73,12 +71,12 @@ def start():
         try:
             serMega.write('A4\n'.encode())  
             print("Sent to Arduino: A4")  
-            # while True:
-            #     if serMega.in_waiting > 0:
-            #         data = serMega.readline().decode('utf-8').rstrip()
-            #         if data == 'Paper detected, stopping stepper motor.':
-            #             isPaperFinished = True
-            #             break
+            while True:
+                if serMega.in_waiting > 0:
+                    data = serMega.readline().decode('utf-8').rstrip()
+                    if data == 'Paper detected, stopping stepper motor.':
+                        isPaperFinished = True
+                        break
             
         except Exception as e:
             print(f"Error: {e}")
