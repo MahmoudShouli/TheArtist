@@ -93,22 +93,7 @@
         </form>
     {% endif %}
 
-    <script>
-    document.querySelector('.upload-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        try {
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-            if (!response.ok) throw new Error('Upload failed');
-            alert('Upload successful');
-        } catch (error) {
-            alert('Error: ' + error.message);
-        }
-    });
-    </script>
+    
     <form method="POST" action="/upload" enctype="multipart/form-data" class="upload-form">
         <input type="file" name="gcode_file" accept=".gcode" required>
         <button type="submit">Upload G-code</button>
