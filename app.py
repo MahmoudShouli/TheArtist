@@ -146,17 +146,17 @@ def shoot():
     # Convert to grayscale for edge detection
     gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
 
-    # Detect edges using Canny edge detection
-    edges = cv2.Canny(gray, 50, 150)
+    # Detect edges using Canny edge detection with lower thresholds for thinner outlines
+    edges = cv2.Canny(gray, 100, 200)
 
     # Find contours of the edges
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
     # Create a blank image for drawing outlines
     outlines = np.zeros_like(edges)
 
-    # Draw only the external contours on the blank image
-    cv2.drawContours(outlines, contours, -1, (255), thickness=2)
+    # Draw only the external contours with thin lines
+    cv2.drawContours(outlines, contours, -1, (255), thickness=1)
 
     # Invert the colors of the final outline image
     inverted_outlines = cv2.bitwise_not(outlines)
@@ -165,6 +165,7 @@ def shoot():
     cv2.imwrite(processed_path, inverted_outlines)
 
     return render_template('index.html', photo_exists=True)
+
 
 
 
