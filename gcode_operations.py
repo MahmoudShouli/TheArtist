@@ -1,5 +1,6 @@
 import serial
 import time
+import cv2
 
 def generate_gcode(image_path, page_size):
     # Load the processed image
