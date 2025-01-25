@@ -161,10 +161,14 @@ def shoot():
     # Draw the contours on the blank image
     cv2.drawContours(outlines, contours, -1, (255), thickness=2)
 
-    # Save the final image with only the outlines
-    cv2.imwrite(processed_path, outlines)
+    # Invert the colors of the final outline image
+    inverted_outlines = cv2.bitwise_not(outlines)
+
+    # Save the final inverted image
+    cv2.imwrite(processed_path, inverted_outlines)
 
     return render_template('index.html', photo_exists=True)
+
 
 
 
