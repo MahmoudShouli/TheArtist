@@ -66,6 +66,9 @@
         .form-container button:hover {
             background-color: #218838;
         }
+        .upload-form {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -89,6 +92,11 @@
             <button type="submit">Shoot</button>
         </form>
     {% endif %}
+
+    <form method="POST" action="/upload" enctype="multipart/form-data" class="upload-form">
+        <input type="file" name="gcode_file" accept=".gcode" required>
+        <button type="submit">Upload G-code</button>
+    </form>
 
     <div class="form-container">
         <form method="POST" action="/start">

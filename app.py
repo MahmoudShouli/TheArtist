@@ -33,6 +33,30 @@ except Exception as e:
 def index():
     return render_template('index.html', photo_exists=os.path.exists(processed_path))
 
+
+@app.route('/upload', methods=['POST'])
+def upload_gcode():
+    if 'gcode_file' not in request.files:
+        return "No file part", 400
+    file = request.files['gcode_file']
+    if file.filename == '':
+        return "No selected file", 400
+    if file and file.filename.endswith('.gcode'):
+        gcode_path = 'drawing.gcode'
+        file.save(gcode_path)  # Save the file as 'drawing.gcode'
+        print("G-code file uploaded and saved as 'drawing.gcode'")
+
+        # Print the G-code file to the console
+        with open(gcode_path, 'r') as gcode_file:
+            print("\n--- G-code File Contents ---")
+            print(gcode_file.read())
+            print("--- End of G-code File ---\n")
+
+        return redirect(url_for('index'))
+    else:
+        return "Invalid file format. Please upload a .gcode file.", 400
+
+
 @app.route('/start', methods=['POST'])
 def start():
 
