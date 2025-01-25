@@ -82,7 +82,8 @@ def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
                         print(response)
                     if response == "ok":
                         break
-                time.sleep(0.5)
+                if isSettings
+                    time.sleep(0.5)
 
     except Exception as e:
         print(f"Error: {e}")
