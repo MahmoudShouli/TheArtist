@@ -62,12 +62,12 @@ def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
                 "$132=10.000", # Z-axis maximum travel, millimeters
             ]
 
-            if isSettings:
-                for setting in settings:
-                    serUno.write((setting + "\n").encode('utf-8'))
-                    time.sleep(0.1)
-                    print(f"Set: {setting}")
-                    print(serUno.readline().decode('utf-8').strip())  # Read GRBL response
+            # if isSettings:
+            #     for setting in settings:
+            #         serUno.write((setting + "\n").encode('utf-8'))
+            #         time.sleep(0.1)
+            #         print(f"Set: {setting}")
+            #         print(serUno.readline().decode('utf-8').strip())  # Read GRBL response
             
 
 
@@ -82,7 +82,7 @@ def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
                         print(response)
                     if response == "ok":
                         break
-                time.sleep(0.5)
+                time.sleep(1)
 
     except Exception as e:
         print(f"Error: {e}")

@@ -11,6 +11,7 @@ app = Flask(__name__)
 
 #picam = Picamera2()
 
+uploaded_gcode_array = []
 isPenFinished = False
 isPaperFinished = False
 
@@ -36,6 +37,8 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_gcode():
+    global uploaded_gcode_array
+
     if 'gcode_file' not in request.files:
         return "No file part", 400
     file = request.files['gcode_file']
@@ -46,11 +49,15 @@ def upload_gcode():
         file.save(gcode_path)  # Save the file as 'drawing.gcode'
         print("G-code file uploaded and saved as 'drawing.gcode'")
 
-        # Print the G-code file to the console
+        # Read the G-code file into an array
+        
         with open(gcode_path, 'r') as gcode_file:
-            print("\n--- G-code File Contents ---")
-            print(gcode_file.read())
-            print("--- End of G-code File ---\n")
+            for line in gcode_file:
+                cleaned_line = line.strip()
+                if cleaned_line:
+                    uploaded_gcode_array.append(cleaned_line)
+        
+        print("Uploaded G-code array:", uploaded_gcode_array)
 
         return redirect(url_for('index'))
     else:
@@ -106,7 +113,7 @@ def start():
             print(f"Error: {e}")
 
     if isPaperFinished:
-        configure_grbl(uno, gcode_drawing, False)
+        configure_grbl(uno, uploaded_gcode_array, False)
     
 
     return redirect(url_for('index'))  
