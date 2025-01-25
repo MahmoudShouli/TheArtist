@@ -1,6 +1,64 @@
 import serial
 import time
 
+def generate_gcode(image_path, page_size):
+    # Load the processed image
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    # Detect contours
+    contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Determine scaling based on page size (portrait orientation)
+    if page_size == "A3":
+        max_width, max_height = 420.0, 297.0  # in mm (portrait orientation)
+    elif page_size == "A4":
+        max_width, max_height = 297.0, 210.0  # in mm (portrait orientation)
+    else:
+        raise ValueError("Invalid page size. Choose 'A3' or 'A4'.")
+
+    # Get bounding box of contours
+    x_min, y_min, x_max, y_max = float('inf'), float('inf'), 0, 0
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        x_min = min(x_min, x)
+        y_min = min(y_min, y)
+        x_max = max(x_max, x + w)
+        y_max = max(y_max, y + h)
+
+    # Calculate scaling factor
+    width, height = x_max - x_min, y_max - y_min
+    scale_x = max_width / width
+    scale_y = max_height / height
+    scale = min(scale_x, scale_y)
+
+    # Generate G-code
+    gcode = []
+
+    for contour in contours:
+        for i, point in enumerate(contour):
+            x, y = point[0][0], point[0][1]
+
+            # Scale points
+            x = (x - x_min) * scale
+            y = (y - y_min) * scale
+
+            if i == 0:
+                # Move to the starting point
+                gcode.append(f"G00 F1800.0 X{x:.3f} Y{y:.3f}")
+            else:
+                # Draw line to the next point
+                gcode.append(f"G01 F1200.0 X{x:.3f} Y{y:.3f}")
+
+    # Add footer to return to origin
+    gcode.append("G00 X0 Y0")
+
+    # Save the G-code to a file
+    with open("drawing.gcode", "w") as f:
+        f.write("\n".join(gcode))
+
+    return gcode
+    
+
 def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
     """
     Configures GRBL settings by sending $ commands to the Arduino and then sends a predefined array of G-code commands.

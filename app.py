@@ -5,15 +5,18 @@ import numpy as np
 import os
 import time
 import serial
-from sendGcode import configure_grbl
+from gcode_operations import configure_grbl, generate_gcode
 from data import gcode_commands_blue, gcode_commands_black, gcode_drawing
 app = Flask(__name__)
 
 picam = Picamera2()
 
-uploaded_gcode_array = []
+gcode_array = []
 isPenFinished = False
 isPaperFinished = False
+isUpload = False
+
+gcode_path = 'drawing.gcode'
 
 output_dir = "static/photos"
 os.makedirs(output_dir, exist_ok=True)
@@ -30,6 +33,15 @@ except Exception as e:
     print(f"Error: {e}")
     serMega = None
 
+
+def convert_gcodefile_to_array(file):
+    global gcode_array
+    with open(file, 'r') as gcode_file:
+            for line in gcode_file:
+                cleaned_line = line.strip()
+                if cleaned_line:
+                    gcode_array.append(cleaned_line)
+
 @app.route('/')
 def index():
     return render_template('index.html', photo_exists=os.path.exists(processed_path))
@@ -37,27 +49,20 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_gcode():
-    global uploaded_gcode_array
-
+    global gcode_path
+    global isUpload
+    isUpload = True
+    
     if 'gcode_file' not in request.files:
         return "No file part", 400
     file = request.files['gcode_file']
     if file.filename == '':
         return "No selected file", 400
     if file and file.filename.endswith('.gcode'):
-        gcode_path = 'drawing.gcode'
         file.save(gcode_path)  # Save the file as 'drawing.gcode'
         print("G-code file uploaded and saved as 'drawing.gcode'")
-
-        # Read the G-code file into an array
         
-        with open(gcode_path, 'r') as gcode_file:
-            for line in gcode_file:
-                cleaned_line = line.strip()
-                if cleaned_line:
-                    uploaded_gcode_array.append(cleaned_line)
-        
-        print("Uploaded G-code array:", uploaded_gcode_array)
+        convert_gcodefile_to_array(gcode_path)
 
         return redirect(url_for('index'))
     else:
@@ -66,12 +71,18 @@ def upload_gcode():
 
 @app.route('/start', methods=['POST'])
 def start():
-
+        
+    global gcode_path
     global isPenFinished
     global isPaperFinished
 
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Black'
+
+    if not isUpload:
+        generate_gcode('./static/photos/processed_photo.jpg', page_size)
+
+        convert_gcodefile_to_array(gcode_path)
 
     if  pen_color == 'Blue' :
         isPenFinished = configure_grbl(uno, gcode_commands_blue, True)
