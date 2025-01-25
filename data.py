@@ -1,4 +1,5 @@
 gcode_commands_black = [
+    "G00 X0 Y0"
     "G10 L20 P1 X0 Y0 Z0",  # Set current position as origin
     "G90",
     "M3 S150",                 
