@@ -122,7 +122,7 @@ def start():
             print(f"Error: {e}")
 
     if isPaperFinished:
-        configure_grbl(uno, uploaded_gcode_array, False)
+        configure_grbl(uno, gcode_array, False)
     
 
     return redirect(url_for('index'))  
