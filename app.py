@@ -6,12 +6,14 @@ import os
 import time
 import serial
 from gcode_operations import configure_grbl
-from data import gcode_commands_blue, gcode_commands_black
+from data import gcode_commands_blue, gcode_commands_red
 app = Flask(__name__)
 
 picam = Picamera2()
 
-gcode_array = []
+gcode_array = [
+    "G10 L20 P1 X0 Y0 Z0"
+]
 isPenFinished = False
 isPaperFinished = False
 
@@ -79,15 +81,15 @@ def start():
     global isPaperFinished
 
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
-    pen_color = request.form.get('penColor')  # 'Blue' or 'Black'
+    pen_color = request.form.get('penColor')  # 'Blue' or 'Red'
 
     
     if  pen_color == 'Blue' :
         isPenFinished = configure_grbl(uno, gcode_commands_blue, True)
         
 
-    elif pen_color == 'Black':
-        isPenFinished = configure_grbl(uno, gcode_commands_black, True)
+    elif pen_color == 'Red':
+        isPenFinished = configure_grbl(uno, gcode_commands_red, True)
     
 
     if  page_size == 'A3' and isPenFinished:
