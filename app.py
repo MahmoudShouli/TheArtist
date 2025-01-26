@@ -5,8 +5,8 @@ import numpy as np
 import os
 import time
 import serial
-from gcode_operations import configure_grbl, generate_gcode
-from data import gcode_commands_blue, gcode_commands_black, gcode_drawing
+from gcode_operations import configure_grbl
+from data import gcode_commands_blue, gcode_commands_black
 app = Flask(__name__)
 
 picam = Picamera2()
@@ -14,7 +14,7 @@ picam = Picamera2()
 gcode_array = []
 isPenFinished = False
 isPaperFinished = False
-isUpload = False
+
 
 gcode_path = 'drawing.gcode'
 
@@ -36,11 +36,13 @@ except Exception as e:
 
 def convert_gcodefile_to_array(file):
     global gcode_array
+    gcode_array = []  
     with open(file, 'r') as gcode_file:
-            for line in gcode_file:
-                cleaned_line = line.strip()
-                if cleaned_line:
-                    gcode_array.append(cleaned_line)
+        for line in gcode_file:
+            cleaned_line = line.split(';')[0].strip() 
+            if cleaned_line:  
+                gcode_array.append(cleaned_line)
+
 
 @app.route('/')
 def index():
@@ -51,7 +53,7 @@ def index():
 def upload_gcode():
     global gcode_path
     global isUpload
-    isUpload = True
+    
     
     if 'gcode_file' not in request.files:
         return "No file part", 400
@@ -59,7 +61,7 @@ def upload_gcode():
     if file.filename == '':
         return "No selected file", 400
     if file and file.filename.endswith('.gcode'):
-        file.save(gcode_path)  # Save the file as 'drawing.gcode'
+        file.save(gcode_path)  
         print("G-code file uploaded and saved as 'drawing.gcode'")
         
         convert_gcodefile_to_array(gcode_path)
@@ -79,11 +81,7 @@ def start():
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Black'
 
-    if not isUpload:
-        generate_gcode('./static/photos/processed_photo.jpg', page_size)
-
-        convert_gcodefile_to_array(gcode_path)
-
+    
     if  pen_color == 'Blue' :
         isPenFinished = configure_grbl(uno, gcode_commands_blue, True)
         
@@ -137,13 +135,13 @@ def shoot():
     picam.capture_file(photo_path)
     picam.stop()
 
-    # Load the captured image
+    
     image = cv2.imread(photo_path)
 
-    # Convert the image to HSV color space
+    
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    # Define the range for green color and create a mask
+   
     lower_green = np.array([35, 55, 55])
     upper_green = np.array([85, 255, 255])
     mask = cv2.inRange(hsv, lower_green, upper_green)

@@ -88,7 +88,7 @@ void loop() {
       Serial.println("DC motor started...");
 
       // Handle DC motor runtime and stepper motor activation
-      while (millis() - startTime < 17000) {
+      while (millis() - startTime < 20000) {
         unsigned long elapsedTime = millis() - startTime;
 
         // Start stepper motor at 7 seconds
@@ -164,7 +164,7 @@ void loop() {
       Serial.println("DC motor started...");
 
       // Handle DC motor runtime and stepper motor activation
-      while (millis() - startTime < 17000) {
+      while (millis() - startTime < 20000) {
         unsigned long elapsedTime = millis() - startTime;
 
         // Start stepper motor at 7 seconds

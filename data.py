@@ -25,12 +25,6 @@ gcode_commands_blue = [
     "G00 X0 Y0"             # Move back to origin
 ]
 
-gcode_drawing = [
-    
-    "G00 X100 Y100",
-    "G00 X0 Y0"
-   
-]
 
 gcode_retrieve_black = []
 
