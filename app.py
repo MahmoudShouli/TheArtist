@@ -155,66 +155,59 @@ def start():
 @app.route('/shoot', methods=['POST'])
 def shoot():
     global photo_path, processed_path
-    
-    
+
+    # Capture photo
     picam.start()
     picam.capture_file(photo_path)
     picam.stop()
 
-    
+    # Load the image
     image = cv2.imread(photo_path)
 
-    
+    # Convert to HSV for masking
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    
+    # Define green color range for masking
     lower_green = np.array([35, 55, 55])
     upper_green = np.array([85, 255, 255])
 
-    
+    # Create a mask for green color
     mask = cv2.inRange(hsv, lower_green, upper_green)
-
-    
     mask_inv = cv2.bitwise_not(mask)
 
-    
+    # Remove the green background
     result = cv2.bitwise_and(image, image, mask=mask_inv)
 
-   
-    
+    # Convert to LAB color space for better luminance adjustments
     lab = cv2.cvtColor(result, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
 
-    
+    # Apply CLAHE to enhance luminance
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
     l = clahe.apply(l)
 
-    
+    # Merge the LAB channels back
     enhanced_lab = cv2.merge((l, a, b))
-
-    
     enhanced_image = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
 
-    
-    cv2.imwrite(processed_path, enhanced_image)
+    # Additional sharpening filter
+    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])  # Sharpening kernel
+    sharpened_image = cv2.filter2D(enhanced_image, -1, kernel)
 
-    # transfer_file(
-    #     photo_path, 
-    #     "C:\humans\photos", 
-    #     "172.23.2.135", 
-    #     "Mahmoud Shouli", 
-    #     "123321"
-    # )
+    # Increase contrast and brightness (values can be adjusted)
+    alpha = 1.5  # Contrast control (1.0 = no change, >1.0 = more contrast)
+    beta = 20    # Brightness control (0 = no change, >0 = brighter)
+    bright_contrast_image = cv2.convertScaleAbs(sharpened_image, alpha=alpha, beta=beta)
 
-    # transfer_file(
-    #     processed_path, 
-    #     "C:\humans\processed", 
-    #     "172.23.2.135", 
-    #     "Mahmoud Shouli", 
-    #     "123321"
-    # )
+    # Save the processed image
+    cv2.imwrite(processed_path, bright_contrast_image)
+
+    # Uncomment to transfer files (if needed):
+    # transfer_file(photo_path, "C:/humans/photos", "172.23.2.135", "Mahmoud Shouli", "123321")
+    # transfer_file(processed_path, "C:/humans/processed", "172.23.2.135", "Mahmoud Shouli", "123321")
 
     return render_template('index.html', photo_exists=True)
+
 
 
 
