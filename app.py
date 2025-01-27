@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, send_from_directory, url_for,
 from picamera2 import Picamera2
 import cv2
 import numpy as np
+import paramiko
 import os
 import time
 import serial
@@ -34,6 +35,27 @@ try:
 except Exception as e:
     print(f"Error: {e}")
     serMega = None
+
+
+
+def transfer_file(local_path, remote_path, host, username, password):
+    """
+    Transfer a file from Raspberry Pi to Windows using SFTP.
+    :param local_path: Path to the file on Raspberry Pi
+    :param remote_path: Path to the folder on Windows
+    :param host: Windows IP address
+    :param username: Windows username
+    :param password: Windows passwordgit
+    """
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(host, username=username, password=password)
+    sftp = ssh.open_sftp()
+    sftp.put(local_path, remote_path)
+    sftp.close()
+    ssh.close()
+    print(f"File {local_path} transferred to {remote_path}")
+
 
 
 def convert_gcodefile_to_array(file):
@@ -175,6 +197,22 @@ def shoot():
 
     
     cv2.imwrite(processed_path, enhanced_image)
+
+    transfer_file(
+        photo_path, 
+        "C:\humans\photos", 
+        "172.23.2.135", 
+        "Mahmoud Shouli", 
+        "123321"
+    )
+
+    transfer_file(
+        processed_path, 
+        "C:\humans\processed", 
+        "172.23.2.135", 
+        "Mahmoud Shouli", 
+        "123321"
+    )
 
     return render_template('index.html', photo_exists=True)
 
