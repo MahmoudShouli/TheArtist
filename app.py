@@ -134,46 +134,46 @@ def start():
 def shoot():
     global photo_path, processed_path
     
-    # Start the camera and capture the image
+    
     picam.start()
     picam.capture_file(photo_path)
     picam.stop()
 
-    # Read the captured image
+    
     image = cv2.imread(photo_path)
 
-    # Convert the image to HSV color space
+    
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    # Define the green color range
+    
     lower_green = np.array([35, 55, 55])
     upper_green = np.array([85, 255, 255])
 
-    # Create a mask for the green background
+    
     mask = cv2.inRange(hsv, lower_green, upper_green)
 
-    # Invert the mask to isolate non-green parts of the image
+    
     mask_inv = cv2.bitwise_not(mask)
 
-    # Apply the mask to remove the green background
+    
     result = cv2.bitwise_and(image, image, mask=mask_inv)
 
-    # Enhance the quality of the image
-    # Convert the result to LAB color space for brightness and contrast adjustment
+   
+    
     lab = cv2.cvtColor(result, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
 
-    # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) to the L-channel
+    
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
     l = clahe.apply(l)
 
-    # Merge the channels back
+    
     enhanced_lab = cv2.merge((l, a, b))
 
-    # Convert back to BGR color space
+    
     enhanced_image = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
 
-    # Save the enhanced image
+    
     cv2.imwrite(processed_path, enhanced_image)
 
     return render_template('index.html', photo_exists=True)
