@@ -198,21 +198,21 @@ def shoot():
     
     cv2.imwrite(processed_path, enhanced_image)
 
-    transfer_file(
-        photo_path, 
-        "C:\humans\photos", 
-        "172.23.2.135", 
-        "Mahmoud Shouli", 
-        "123321"
-    )
+    # transfer_file(
+    #     photo_path, 
+    #     "C:\humans\photos", 
+    #     "172.23.2.135", 
+    #     "Mahmoud Shouli", 
+    #     "123321"
+    # )
 
-    transfer_file(
-        processed_path, 
-        "C:\humans\processed", 
-        "172.23.2.135", 
-        "Mahmoud Shouli", 
-        "123321"
-    )
+    # transfer_file(
+    #     processed_path, 
+    #     "C:\humans\processed", 
+    #     "172.23.2.135", 
+    #     "Mahmoud Shouli", 
+    #     "123321"
+    # )
 
     return render_template('index.html', photo_exists=True)
 
