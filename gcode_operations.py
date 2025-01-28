@@ -53,8 +53,8 @@ def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
                 "$100=39.000", # X-axis travel resolution, step/mm
                 "$101=68.200", # Y-axis travel resolution, step/mm
                 "$102=400.000",# Z-axis travel resolution, step/mm
-                "$110=2000.000",# X-axis maximum rate, mm/min
-                "$111=2000.000",# Y-axis maximum rate, mm/min
+                "$110=1500.000",# X-axis maximum rate, mm/min
+                "$111=1500.000",# Y-axis maximum rate, mm/min
                 "$112=300.000",# Z-axis maximum rate, mm/min
                 "$120=40.000", # X-axis acceleration, mm/sec^2
                 "$121=40.000", # Y-axis acceleration, mm/sec^2
@@ -64,12 +64,24 @@ def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
                 "$132=10.000", # Z-axis maximum travel, millimeters
             ]
 
-            # if isSettings:
-            #     for setting in settings:
-            #         serUno.write((setting + "\n").encode('utf-8'))
-            #         time.sleep(0.1)
-            #         print(f"Set: {setting}")
-            #         print(serUno.readline().decode('utf-8').strip())  # Read GRBL response
+            drawing_settings = [
+                "$110=800.000",# X-axis maximum rate, mm/min
+                "$111=800.000",# Y-axis maximum rate, mm/min
+            ]
+
+            if isSettings:
+                for setting in settings:
+                    serUno.write((setting + "\n").encode('utf-8'))
+                    time.sleep(0.1)
+                    print(f"Set: {setting}")
+                    print(serUno.readline().decode('utf-8').strip())  # Read GRBL response
+
+            else:
+                for setting in drawing_settings:
+                    serUno.write((setting + "\n").encode('utf-8'))
+                    time.sleep(0.1)
+                    print(f"Set: {setting}")
+                    print(serUno.readline().decode('utf-8').strip())
             
 
 
