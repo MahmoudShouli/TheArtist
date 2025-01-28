@@ -10,7 +10,7 @@ from gcode_operations import configure_grbl
 from data import gcode_commands_blue, gcode_commands_red
 app = Flask(__name__)
 
-picam = Picamera2()
+#picam = Picamera2()
 
 gcode_array = [
     "G10 L20 P1 X0 Y0 Z0"
@@ -203,8 +203,8 @@ def shoot():
     cv2.imwrite(processed_path, bright_contrast_image)
 
     # Uncomment to transfer files (if needed):
-    transfer_file(photo_path, "C:/humans/photos", "172.23.2.135", "CARVA", "123321")
-    transfer_file(processed_path, "C:/humans/processed", "172.23.2.135", "CARVA", "123321")
+    # transfer_file(photo_path, "C:/humans/photos", "172.23.2.135", "CARVA", "123321")
+    # transfer_file(processed_path, "C:/humans/processed", "172.23.2.135", "CARVA", "123321")
 
     return render_template('index.html', photo_exists=True)
 
