@@ -140,7 +140,7 @@ def start():
         elif pen_color == 'Red':
             isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_red, True)
 
-    if isWholeProcessFinished
+    if isWholeProcessFinished:
         serMega.write('DONE\n'.encode()) 
         print("Sent to Arduino: DONE")
     
