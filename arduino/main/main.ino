@@ -222,10 +222,36 @@ void loop() {
     }
 
     else if (command == "DONE") {
-      digitalWrite(rollEn, LOW);
-      delay(10000);
-      digitalWrite(rollEn, HIGH);
-    }
+      unsigned long startTime = millis(); // Record the start time
+      unsigned long currentTime;
+      const unsigned long runDuration = 10000; // 10 seconds
+      const unsigned long stepInterval = 500; // Adjust this to control motor speed (microseconds)
+      unsigned long previousStepTime = micros(); // Record time for step pulse generation
+      
+      Serial.println("Starting stepper motor for 10 seconds...");
+
+      digitalWrite(rollEn, LOW); // Enable the stepper motor driver
+
+      while (true) {
+        currentTime = millis();
+
+        // Generate step pulses for the stepper motor
+        if ((micros() - previousStepTime) >= stepInterval) {
+          previousStepTime = micros();
+          digitalWrite(rollStep, HIGH);
+          delayMicroseconds(10); // Short pulse for the stepper driver
+          digitalWrite(rollStep, LOW);
+        }
+
+        // Stop the stepper motor after 10 seconds
+        if (currentTime - startTime >= runDuration) {
+          Serial.println("Stopping stepper motor...");
+          digitalWrite(rollEn, HIGH); // Disable the stepper motor driver
+          break;
+        }
+      }
+  }
+
 
   }
 }
