@@ -18,6 +18,7 @@ gcode_array = [
 isPenFinished = False
 isPaperFinished = False
 isStartRetrieve = False
+isWholeProcessFinished = False
 
 
 gcode_path = 'drawing.gcode'
@@ -84,6 +85,7 @@ def start():
     global isPenFinished
     global isPaperFinished
     global isStartRetrieve
+    global isWholeProcessFinished
 
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Red'
@@ -134,9 +136,12 @@ def start():
 
     if isStartRetrieve:
         if pen_color == 'Blue':
-            configure_grbl(uno, gcode_retrieve_blue, True)
+            isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_blue, True)
         elif pen_color == 'Red':
-            configure_grbl(uno, gcode_retrieve_red, True)
+            isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_red, True)
+
+    if isWholeProcessFinished
+        serMega.write('DONE\n'.encode()) 
     
 
     return redirect(url_for('index'))  

@@ -220,5 +220,12 @@ void loop() {
 
       Serial.println("Process complete.");
     }
+
+    else if (command == "DONE") {
+      digitalWrite(rollEn, LOW);
+      delay(10000);
+      digitalWrite(rollEn, HIGH);
+    }
+
   }
 }
