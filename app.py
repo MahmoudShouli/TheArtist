@@ -7,7 +7,7 @@ import os
 import time
 import serial
 from gcode_operations import configure_grbl
-from data import gcode_commands_blue, gcode_commands_red
+from data import gcode_commands_blue, gcode_commands_red, gcode_retrieve_red, gcode_retrieve_red
 app = Flask(__name__)
 
 #picam = Picamera2()
@@ -17,6 +17,7 @@ gcode_array = [
 ]
 isPenFinished = False
 isPaperFinished = False
+isStartRetrieve = False
 
 
 gcode_path = 'drawing.gcode'
@@ -36,25 +37,6 @@ except Exception as e:
     print(f"Error: {e}")
     serMega = None
 
-
-
-def transfer_file(local_path, remote_path, host, username, password):
-    """
-    Transfer a file from Raspberry Pi to Windows using SFTP.
-    :param local_path: Path to the file on Raspberry Pi
-    :param remote_path: Path to the folder on Windows
-    :param host: Windows IP address
-    :param username: Windows username
-    :param password: Windows passwordgit
-    """
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(host, username=username, password=password)
-    sftp = ssh.open_sftp()
-    sftp.put(local_path, remote_path)
-    sftp.close()
-    ssh.close()
-    print(f"File {local_path} transferred to {remote_path}")
 
 
 
@@ -101,6 +83,7 @@ def start():
     global gcode_path
     global isPenFinished
     global isPaperFinished
+    global isStartRetrieve
 
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Red'
@@ -146,7 +129,14 @@ def start():
             print(f"Error: {e}")
 
     if isPaperFinished:
-        configure_grbl(uno, gcode_array, False)
+        isStartRetrieve = configure_grbl(uno, gcode_array, False)
+
+
+    if isStartRetrieve:
+        if pen_color == 'Blue':
+            configure_grbl(uno, gcode_retrieve_blue, True)
+        elif pen_color == 'Red':
+            configure_grbl(uno, gcode_retrieve_red, True)
     
 
     return redirect(url_for('index'))  
@@ -202,20 +192,8 @@ def shoot():
     # Save the processed image
     cv2.imwrite(processed_path, bright_contrast_image)
 
-    # Uncomment to transfer files (if needed):
-    # transfer_file(photo_path, "C:/humans/photos", "172.23.2.135", "CARVA", "123321")
-    # transfer_file(processed_path, "C:/humans/processed", "172.23.2.135", "CARVA", "123321")
 
     return render_template('index.html', photo_exists=True)
-
-
-
-
-
-
-
-
-
 
 
 
