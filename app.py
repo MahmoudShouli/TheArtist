@@ -134,11 +134,11 @@ def start():
         isStartRetrieve = configure_grbl(uno, gcode_array, False)
 
 
-    if isStartRetrieve:
-        if pen_color == 'Blue':
-            configure_grbl(uno, gcode_retrieve_blue, True)
-        elif pen_color == 'Red':
-            configure_grbl(uno, gcode_retrieve_red, True)
+    # if isStartRetrieve:
+    #     if pen_color == 'Blue':
+    #         configure_grbl(uno, gcode_retrieve_blue, True)
+    #     elif pen_color == 'Red':
+    #         configure_grbl(uno, gcode_retrieve_red, True)
 
     # if isWholeProcessFinished:
     #     serMega.write('DONE\n'.encode()) 
