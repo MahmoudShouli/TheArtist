@@ -142,6 +142,7 @@ def start():
 
     if isWholeProcessFinished
         serMega.write('DONE\n'.encode()) 
+        print("Sent to Arduino: DONE")
     
 
     return redirect(url_for('index'))  
