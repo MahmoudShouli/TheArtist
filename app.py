@@ -7,7 +7,7 @@ import os
 import time
 import serial
 from gcode_operations import configure_grbl
-from data import gcode_commands_blue, gcode_commands_red, gcode_retrieve_red, gcode_retrieve_red
+from data import gcode_commands_blue, gcode_commands_red, gcode_retrieve_red, gcode_retrieve_blue
 app = Flask(__name__)
 
 #picam = Picamera2()
