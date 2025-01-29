@@ -147,10 +147,10 @@ void loop() {
     else if (command == "A4") {
 
       // Check if paper is present in the feeder
-      if ( digitalRead(A4_F_IR) == HIGH ) {
+      while ( digitalRead(A4_F_IR) == HIGH ) {
         Serial.println("There's no paper!");
         delay(500);
-        return; // Skip the rest of the loop
+        //return; // Skip the rest of the loop
       }
 
       unsigned long startTime = millis(); // Record the start time
