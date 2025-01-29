@@ -224,7 +224,7 @@ void loop() {
     else if (command == "DONE") {
       unsigned long startTime = millis(); // Record the start time
       unsigned long currentTime;
-      const unsigned long runDuration = 10000; // 10 seconds
+      const unsigned long runDuration = 5000; // 10 seconds
       const unsigned long stepInterval = 500; // Adjust this to control motor speed (microseconds)
       unsigned long previousStepTime = micros(); // Record time for step pulse generation
       
