@@ -31,6 +31,18 @@
 const unsigned long stepInterval = 500; // Time between steps (microseconds)
 unsigned long previousStepTime = 0;
 
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void printOnLCD(String text, int col, int row, bool clear) {
+  if (clear)
+    lcd.clear();
+  lcd.setCursor(col, row);
+  lcd.print(text);
+}
+
 void setup() {
   Serial.begin(9600);
 
@@ -54,6 +66,12 @@ void setup() {
   pinMode(A3_R_IR, INPUT);
   pinMode(A4_R_IR, INPUT);
 
+  lcd.init();
+  lcd.backlight();
+
+  printOnLCD("Welcome to", 3, 0, true);
+  printOnLCD("THE ARTIST", 3, 1, false);
+
 
   // Initialize motor direction and enable the motor driver
   digitalWrite(rollDir, motorDir);
@@ -68,13 +86,42 @@ void loop() {
     String command = Serial.readStringUntil('\n'); // Read the command
     command.trim(); // Remove any trailing newline characters
 
-    if (command == "A3") {
+  
+    if (command.startsWith("info:")) {
+      
+      int firstColon = command.indexOf(":");
+      int secondColon = command.indexOf(":", firstColon + 1);
+
+      if (firstColon != -1 && secondColon != -1) {  
+        String size = command.substring(firstColon + 1, secondColon);
+        String color = command.substring(secondColon + 1);
+
+        printOnLCD("Size: " + size, 3, 0, true);
+        printOnLCD("Color: " + color, 3, 1, false);
+
+        Serial.println("info received"); 
+      }
+     
+    }
+
+    else if (command == "PB") {
+      printOnLCD("Picking up pen...", 0, 0, true);
+    }
+
+    else if (command == "DRAWING") {
+      printOnLCD("Drawing...", 0, 0, true);
+    }
+
+    else if (command == "RET") {
+      printOnLCD("Drawing done!", 0, 0, true);
+      printOnLCD("Returning pen...", 0, 1, false);
+    }
+
+    else if (command == "A3") {
 
       // Check if paper is present in the feeder
-      if (digitalRead(A3_F_IR) == HIGH ) {
-        Serial.println("There's no paper!");
-        delay(500);
-        return; // Skip the rest of the loop
+      while (digitalRead(A3_F_IR) == HIGH ) {
+        printOnLCD("No paper!", 3, 0, true);
       }
 
       unsigned long startTime = millis(); // Record the start time
@@ -85,7 +132,7 @@ void loop() {
       digitalWrite(IN1A3, HIGH);
       digitalWrite(IN2A3, LOW);
 
-      Serial.println("DC motor started...");
+      printOnLCD("Paper rolling...", 0, 0, true);
 
       // Handle DC motor runtime and stepper motor activation
       while (millis() - startTime < 20000) {
@@ -135,22 +182,20 @@ void loop() {
 
           // Stop stepper motor when paper is detected
           if (digitalRead(A3_R_IR) == LOW) {
-            Serial.println("Paper detected, stopping stepper motor.");
+            printOnLCD("Paper arrived!", 3, 0, true);
             digitalWrite(rollEn, HIGH); // Disable the motor driver
             break; // Exit the loop after stepper stops
           }
         }
       }
 
-      Serial.println("Process complete.");
+      
     }
     else if (command == "A4") {
 
       // Check if paper is present in the feeder
       while ( digitalRead(A4_F_IR) == HIGH ) {
-        Serial.println("There's no paper!");
-        delay(500);
-        //return; // Skip the rest of the loop
+        printOnLCD("No paper!", 3, 0, true);
       }
 
       unsigned long startTime = millis(); // Record the start time
@@ -161,7 +206,7 @@ void loop() {
       digitalWrite(IN1A4, HIGH);
       digitalWrite(IN2A4, LOW);
 
-      Serial.println("DC motor started...");
+      printOnLCD("Paper rolling...", 0, 0, true);
 
       // Handle DC motor runtime and stepper motor activation
       while (millis() - startTime < 20000) {
@@ -211,14 +256,14 @@ void loop() {
 
           // Stop stepper motor when paper is detected
           if (digitalRead(A4_R_IR) == LOW) {
-            Serial.println("Paper detected, stopping stepper motor.");
+            printOnLCD("Paper arrived!", 3, 0, true);
             digitalWrite(rollEn, HIGH); // Disable the motor driver
             break; // Exit the loop after stepper stops
           }
         }
       }
 
-      Serial.println("Process complete.");
+     
     }
 
     else if (command == "DONE") {
@@ -228,7 +273,7 @@ void loop() {
       const unsigned long stepInterval = 500; // Adjust this to control motor speed (microseconds)
       unsigned long previousStepTime = micros(); // Record time for step pulse generation
       
-      Serial.println("Starting stepper motor for 10 seconds...");
+      printOnLCD("Enjoy :)", 0, 0, true);
 
       digitalWrite(rollEn, LOW); // Enable the stepper motor driver
 

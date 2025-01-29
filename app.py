@@ -90,12 +90,21 @@ def start():
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Red'
 
+    serMega.write(('info:' + page_size + ':' + pen_color).encode())
+    while serMega.readline().decode('utf-8').rstrip() != 'info received':
+        pass
+
+    
+    
+
     
     if  pen_color == 'Blue' :
+        serMega.write('PB\n'.encode())
         isPenFinished = configure_grbl(uno, gcode_commands_blue, True)
         
 
     elif pen_color == 'Red':
+        serMega.write('PB\n'.encode())
         isPenFinished = configure_grbl(uno, gcode_commands_red, True)
     
 
@@ -131,10 +140,12 @@ def start():
             print(f"Error: {e}")
 
     if isPaperFinished:
+        serMega.write('DRAWING\n'.encode())
         isStartRetrieve = configure_grbl(uno, gcode_array, False)
 
 
     if isStartRetrieve:
+        serMega.write('RET\n'.encode())
         if pen_color == 'Blue':
             isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_blue, True)
         elif pen_color == 'Red':
