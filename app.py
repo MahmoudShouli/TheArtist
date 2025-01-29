@@ -90,13 +90,6 @@ def start():
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Red'
 
-    serMega.write(('info:' + page_size + ':' + pen_color).encode())
-    while serMega.readline().decode('utf-8').rstrip() != 'info received':
-        pass
-
-    
-    
-
     
     if  pen_color == 'Blue' :
         serMega.write('PB\n'.encode())

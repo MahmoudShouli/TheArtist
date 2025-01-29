@@ -86,25 +86,8 @@ void loop() {
     String command = Serial.readStringUntil('\n'); // Read the command
     command.trim(); // Remove any trailing newline characters
 
-  
-    if (command.startsWith("info:")) {
-      
-      int firstColon = command.indexOf(":");
-      int secondColon = command.indexOf(":", firstColon + 1);
 
-      if (firstColon != -1 && secondColon != -1) {  
-        String size = command.substring(firstColon + 1, secondColon);
-        String color = command.substring(secondColon + 1);
-
-        printOnLCD("Size: " + size, 3, 0, true);
-        printOnLCD("Color: " + color, 3, 1, false);
-
-        Serial.println("info received"); 
-      }
-     
-    }
-
-    else if (command == "PB") {
+    if (command == "PB") {
       printOnLCD("Picking up pen...", 0, 0, true);
     }
 
@@ -120,8 +103,11 @@ void loop() {
     else if (command == "A3") {
 
       // Check if paper is present in the feeder
-      while (digitalRead(A3_F_IR) == HIGH ) {
+      if (digitalRead(A3_F_IR) == HIGH ) {
         printOnLCD("No paper!", 3, 0, true);
+        while (digitalRead(A3_F_IR) == HIGH) {
+          // Wait for paper to be inserted
+        }
       }
 
       unsigned long startTime = millis(); // Record the start time
@@ -194,8 +180,11 @@ void loop() {
     else if (command == "A4") {
 
       // Check if paper is present in the feeder
-      while ( digitalRead(A4_F_IR) == HIGH ) {
+      if ( digitalRead(A4_F_IR) == HIGH ) {
         printOnLCD("No paper!", 3, 0, true);
+        while (digitalRead(A4_F_IR) == HIGH) {
+          // Wait for paper to be inserted
+        }
       }
 
       unsigned long startTime = millis(); // Record the start time
