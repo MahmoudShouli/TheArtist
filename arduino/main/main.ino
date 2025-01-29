@@ -169,6 +169,8 @@ void loop() {
           // Stop stepper motor when paper is detected
           if (digitalRead(A3_R_IR) == LOW) {
             printOnLCD("Paper arrived!", 3, 0, true);
+            delay(3000);
+            Serial.println("Paper detected, stopping stepper motor.");
             digitalWrite(rollEn, HIGH); // Disable the motor driver
             break; // Exit the loop after stepper stops
           }
@@ -246,6 +248,8 @@ void loop() {
           // Stop stepper motor when paper is detected
           if (digitalRead(A4_R_IR) == LOW) {
             printOnLCD("Paper arrived!", 3, 0, true);
+            delay(3000);
+            Serial.println("Paper detected, stopping stepper motor.");
             digitalWrite(rollEn, HIGH); // Disable the motor driver
             break; // Exit the loop after stepper stops
           }
