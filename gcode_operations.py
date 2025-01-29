@@ -8,7 +8,7 @@ def wait_for_idle(serUno):
     """Waits until GRBL reports 'Idle' status, meaning all commands have been executed."""
     while True:
         serUno.write(b"?\n")  # Send status request
-        time.sleep(0.3)  # Small delay to prevent flooding GRBL
+        time.sleep(0.1)  # Small delay to prevent flooding GRBL
         response = serUno.readline().decode('utf-8').strip()
         
         if "Idle" in response:
