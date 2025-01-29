@@ -130,19 +130,19 @@ def start():
         except Exception as e:
             print(f"Error: {e}")
 
-    # if isPaperFinished:
-    #     isStartRetrieve = configure_grbl(uno, gcode_array, False)
+    if isPaperFinished:
+        isStartRetrieve = configure_grbl(uno, gcode_array, False)
 
 
-    # if isStartRetrieve:
-    #     if pen_color == 'Blue':
-    #         isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_blue, True)
-    #     elif pen_color == 'Red':
-    #         isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_red, True)
+    if isStartRetrieve:
+        if pen_color == 'Blue':
+            isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_blue, True)
+        elif pen_color == 'Red':
+            isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_red, True)
 
-    # if isWholeProcessFinished:
-    #     serMega.write('DONE\n'.encode()) 
-    #     print("Sent to Arduino: DONE")
+    if isWholeProcessFinished:
+        serMega.write('DONE\n'.encode()) 
+        print("Sent to Arduino: DONE")
     
 
     return redirect(url_for('index'))  
