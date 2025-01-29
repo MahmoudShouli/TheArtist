@@ -5,18 +5,15 @@ import cv2
 
 
 def wait_for_idle(serUno):
-    """Efficiently waits until GRBL reports 'Idle' status with minimal delay."""
-    serUno.flushInput()  # Clear the serial buffer before checking
+    """Waits until GRBL reports 'Idle' status, meaning all commands have been executed."""
     while True:
         serUno.write(b"?\n")  # Send status request
-        time.sleep(0.1)  # Reduced delay for faster response
+        time.sleep(0.01)  # Small delay to prevent flooding GRBL
         response = serUno.readline().decode('utf-8').strip()
-
-        if response:
-            print(f"GRBL Status: {response}")  # Debugging: See real-time status
+        
         if "Idle" in response:
             print("GRBL is now idle.")
-            break  
+            break    
 
 
 def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
