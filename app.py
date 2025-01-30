@@ -10,7 +10,7 @@ from data import gcode_commands_blue, gcode_commands_red, gcode_retrieve_red, gc
 from data import gcode_array, gcode_A3_signature, gcode_A4_signature
 app = Flask(__name__)
 
-#picam = Picamera2()
+picam = Picamera2()
 
 
 isPenFinished = False
