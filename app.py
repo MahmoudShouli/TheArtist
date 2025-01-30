@@ -2,26 +2,27 @@ from flask import Flask, render_template, request, send_from_directory, url_for,
 from picamera2 import Picamera2
 import cv2
 import numpy as np
-import paramiko
 import os
 import time
 import serial
 from gcode_operations import configure_grbl
 from data import gcode_commands_blue, gcode_commands_red, gcode_retrieve_red, gcode_retrieve_blue
+from data import gcode_array, gcode_A3_signature, gcode_A4_signature
 app = Flask(__name__)
 
 #picam = Picamera2()
 
-gcode_array = [
-    "G10 L20 P1 X0 Y0 Z0"
-]
+
 isPenFinished = False
 isPaperFinished = False
 isStartRetrieve = False
+isDrawingDone = False
 isWholeProcessFinished = False
 
 
-gcode_path = 'drawing.gcode'
+gcode_path = './gcode/drawing.gcode'
+a4sig_path = './gcode/a4sig.gcode'
+a3sig_path = './gcode/a3sig.gcode'
 
 output_dir = "static/photos"
 os.makedirs(output_dir, exist_ok=True)
@@ -41,14 +42,12 @@ except Exception as e:
 
 
 
-def convert_gcodefile_to_array(file):
-    global gcode_array
-    gcode_array = []  
+def convert_gcodefile_to_array(file, arr):
     with open(file, 'r') as gcode_file:
         for line in gcode_file:
             cleaned_line = line.split(';')[0].strip() 
             if cleaned_line:  
-                gcode_array.append(cleaned_line)
+                arr.append(cleaned_line)
 
 
 @app.route('/')
@@ -58,8 +57,8 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_gcode():
-    global gcode_path
-    global isUpload
+    global gcode_path, a3sig_path, a4sig_path
+    global gcode_array, gcode_A3_signature, gcode_A4_signature
     
     
     if 'gcode_file' not in request.files:
@@ -71,7 +70,9 @@ def upload_gcode():
         file.save(gcode_path)  
         print("G-code file uploaded and saved as 'drawing.gcode'")
         
-        convert_gcodefile_to_array(gcode_path)
+        convert_gcodefile_to_array(gcode_path, gcode_array)
+        convert_gcodefile_to_array(a3sig_path, gcode_A3_signature)
+        convert_gcodefile_to_array(a4sig_path, gcode_A4_signature)
 
         return redirect(url_for('index'))
     else:
@@ -81,12 +82,8 @@ def upload_gcode():
 @app.route('/start', methods=['POST'])
 def start():
         
-    global gcode_path
-    global isPenFinished
-    global isPaperFinished
-    global isStartRetrieve
-    global isWholeProcessFinished
-
+    global isPenFinished, isPaperFinished, isStartRetrieve, isDrawingDone, isWholeProcessFinished
+   
     page_size = request.form.get('pageSize')  # 'A4' or 'A3'
     pen_color = request.form.get('penColor')  # 'Blue' or 'Red'
 
@@ -140,9 +137,16 @@ def start():
     if isStartRetrieve:
         serMega.write('RET\n'.encode())
         if pen_color == 'Blue':
-            isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_blue, True)
+            isDrawingDone = configure_grbl(uno, gcode_retrieve_blue, True)
         elif pen_color == 'Red':
-            isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_red, True)
+            isDrawingDone = configure_grbl(uno, gcode_retrieve_red, True)
+
+    if isDrawingDone:
+        serMega.write('SIGN\n'.encode())
+        if page_size == 'A3':
+            isWholeProcessFinished = configure_grbl(uno, gcode_A3_signature, False)
+        elif page_size == 'A4':
+            isWholeProcessFinished = configure_grbl(uno, gcode_A4_signature, False)
 
     if isWholeProcessFinished:
         serMega.write('DONE\n'.encode()) 

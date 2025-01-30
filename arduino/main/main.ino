@@ -86,7 +86,6 @@ void loop() {
     String command = Serial.readStringUntil('\n'); // Read the command
     command.trim(); // Remove any trailing newline characters
 
-
     if (command == "PB") {
       printOnLCD("Picking up pen...", 0, 0, true);
     }
@@ -98,6 +97,10 @@ void loop() {
     else if (command == "RET") {
       printOnLCD("Drawing done!", 0, 0, true);
       printOnLCD("Returning pen...", 0, 1, false);
+    }
+
+    else if (command == "SIGN") {
+      printOnLCD("our last touch.. ", 0, 0, true);
     }
 
     else if (command == "A3") {
@@ -121,7 +124,7 @@ void loop() {
       printOnLCD("Paper rolling...", 0, 0, true);
 
       // Handle DC motor runtime and stepper motor activation
-      while (millis() - startTime < 20000) {
+      while (millis() - startTime < 16500) {
         unsigned long elapsedTime = millis() - startTime;
 
         // Start stepper motor at 7 seconds
@@ -200,7 +203,7 @@ void loop() {
       printOnLCD("Paper rolling...", 0, 0, true);
 
       // Handle DC motor runtime and stepper motor activation
-      while (millis() - startTime < 20000) {
+      while (millis() - startTime < 19000) {
         unsigned long elapsedTime = millis() - startTime;
 
         // Start stepper motor at 7 seconds
