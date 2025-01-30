@@ -51,15 +51,18 @@ gcode_retrieve_blue = [
 
 
 gcode_array = [
-    "G10 L20 P1 X0 Y0 Z0"
+    "G10 L20 P1 X0 Y0 Z0",
+    "G90"
 ]
 
 gcode_A4_signature = [
-
+    "G10 L20 P1 X0 Y0 Z0",
+    "G90"
 ]
 
 gcode_A3_signature = [
-
+    "G10 L20 P1 X0 Y0 Z0",
+    "G90"
 ]
 
 

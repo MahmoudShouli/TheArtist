@@ -71,6 +71,8 @@ def upload_gcode():
         print("G-code file uploaded and saved as 'drawing.gcode'")
         
         convert_gcodefile_to_array(gcode_path, gcode_array)
+        gcode_array.append('G00 Z0')
+        gcode_array.append('G00 X0 Y0')
         convert_gcodefile_to_array(a3sig_path, gcode_A3_signature)
         convert_gcodefile_to_array(a4sig_path, gcode_A4_signature)
 
