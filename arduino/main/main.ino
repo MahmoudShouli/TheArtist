@@ -80,11 +80,13 @@ void setup() {
 
 void loop() {
 
-  if(Serial.available() > 0) {
+  if(1) {
   
     // Command to activate A3
     String command = Serial.readStringUntil('\n'); // Read the command
     command.trim(); // Remove any trailing newline characters
+
+    command = "A3";
 
     if (command == "PB") {
       printOnLCD("Picking up pen...", 0, 0, true);
