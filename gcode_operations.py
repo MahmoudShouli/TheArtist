@@ -41,8 +41,8 @@ def configure_grbl(serial_port, gArray, isSettings, baud_rate=115200):
             
             # Update GRBL settings
             settings = [
-                "$110=1500.000",# X-axis maximum rate, mm/min
-                "$111=1500.000",# Y-axis maximum rate, mm/min
+                "$110=1100.000",# X-axis maximum rate, mm/min
+                "$111=1100.000",# Y-axis maximum rate, mm/min
             ]
 
             drawing_settings = [

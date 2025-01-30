@@ -131,22 +131,22 @@ def start():
 
     if isPaperFinished:
         serMega.write('DRAWING\n'.encode())
-        isStartRetrieve = configure_grbl(uno, gcode_array, False)
+        isDrawingDone = configure_grbl(uno, gcode_array, False)
 
-
-    if isStartRetrieve:
-        serMega.write('RET\n'.encode())
-        if pen_color == 'Blue':
-            isDrawingDone = configure_grbl(uno, gcode_retrieve_blue, True)
-        elif pen_color == 'Red':
-            isDrawingDone = configure_grbl(uno, gcode_retrieve_red, True)
 
     if isDrawingDone:
         serMega.write('SIGN\n'.encode())
         if page_size == 'A3':
-            isWholeProcessFinished = configure_grbl(uno, gcode_A3_signature, False)
+            isStartRetrieve = configure_grbl(uno, gcode_A3_signature, False)
         elif page_size == 'A4':
-            isWholeProcessFinished = configure_grbl(uno, gcode_A4_signature, False)
+            isStartRetrieve = configure_grbl(uno, gcode_A4_signature, False)
+
+    if isStartRetrieve:
+        serMega.write('RET\n'.encode())
+        if pen_color == 'Blue':
+            isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_blue, True)
+        elif pen_color == 'Red':
+            isWholeProcessFinished = configure_grbl(uno, gcode_retrieve_red, True)
 
     if isWholeProcessFinished:
         serMega.write('DONE\n'.encode()) 
