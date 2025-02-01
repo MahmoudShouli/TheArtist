@@ -184,32 +184,20 @@ def shoot():
     # Remove the green background
     result = cv2.bitwise_and(image, image, mask=mask_inv)
 
-    # Convert to LAB color space for better luminance adjustments
-    lab = cv2.cvtColor(result, cv2.COLOR_BGR2LAB)
-    l, a, b = cv2.split(lab)
+    # Apply a mild sharpening filter
+    sharpening_kernel = np.array([[0, -0.5, 0], [-0.5, 3, -0.5], [0, -0.5, 0]])
+    sharpened_image = cv2.filter2D(result, -1, sharpening_kernel)
 
-    # Apply CLAHE to enhance luminance
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-    l = clahe.apply(l)
-
-    # Merge the LAB channels back
-    enhanced_lab = cv2.merge((l, a, b))
-    enhanced_image = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
-
-    # Additional sharpening filter
-    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])  # Sharpening kernel
-    sharpened_image = cv2.filter2D(enhanced_image, -1, kernel)
-
-    # Increase contrast and brightness (values can be adjusted)
-    alpha = 1.5 # Contrast control (1.0 = no change, >1.0 = more contrast)
-    beta = 11    # Brightness control (0 = no change, >0 = brighter)
-    bright_contrast_image = cv2.convertScaleAbs(sharpened_image, alpha=alpha, beta=beta)
+    # Slight contrast and brightness adjustment
+    alpha = 1.2  # Light contrast increase
+    beta = 5     # Light brightness increase
+    enhanced_image = cv2.convertScaleAbs(sharpened_image, alpha=alpha, beta=beta)
 
     # Save the processed image
-    cv2.imwrite(processed_path, bright_contrast_image)
-
+    cv2.imwrite(processed_path, enhanced_image)
 
     return render_template('index.html', photo_exists=True)
+
 
 
 
