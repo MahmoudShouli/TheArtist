@@ -201,8 +201,8 @@ def shoot():
     sharpened_image = cv2.filter2D(enhanced_image, -1, kernel)
 
     # Increase contrast and brightness (values can be adjusted)
-    alpha = 1 # Contrast control (1.0 = no change, >1.0 = more contrast)
-    beta = 10    # Brightness control (0 = no change, >0 = brighter)
+    alpha = 1.5 # Contrast control (1.0 = no change, >1.0 = more contrast)
+    beta = 15    # Brightness control (0 = no change, >0 = brighter)
     bright_contrast_image = cv2.convertScaleAbs(sharpened_image, alpha=alpha, beta=beta)
 
     # Save the processed image
