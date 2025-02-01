@@ -174,8 +174,8 @@ def shoot():
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     # Define green color range for masking
-    lower_green = np.array([35, 55, 55])
-    upper_green = np.array([85, 255, 255])
+    lower_green = np.array([30, 30, 30])
+    upper_green = np.array([90, 255, 255])
 
     # Create a mask for green color
     mask = cv2.inRange(hsv, lower_green, upper_green)
