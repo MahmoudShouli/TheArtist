@@ -188,13 +188,10 @@ def shoot():
     sharpening_kernel = np.array([[0, -0.5, 0], [-0.5, 3, -0.5], [0, -0.5, 0]])
     sharpened_image = cv2.filter2D(result, -1, sharpening_kernel)
 
-    # Slight contrast and brightness adjustment
-    alpha = 0.5  # Light contrast increase
-    beta = 9  # Light brightness increase
-    enhanced_image = cv2.convertScaleAbs(sharpened_image, alpha=alpha, beta=beta)
+
 
     # Save the processed image
-    cv2.imwrite(processed_path, enhanced_image)
+    cv2.imwrite(processed_path, sharpened_image)
 
     return render_template('index.html', photo_exists=True)
 
