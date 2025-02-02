@@ -172,38 +172,38 @@ processed_path = "processed.jpg"
 def shoot():
     global photo_path, processed_path
 
-    # Capture photo
+    
     picam.start()
     picam.capture_file(photo_path)
     picam.stop()
 
-    # Load the image
+    
     image = cv2.imread(photo_path)
 
-    # Convert to HSV for masking
+   
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    # Define green color range for masking
-    lower_green = np.array([30, 30, 30])
-    upper_green = np.array([90, 255, 255])
+    
+    lower_green = np.array([40, 100, 50])
+    upper_green = np.array([80, 255, 255])
 
-    # Create a mask for green color
+    
     mask = cv2.inRange(hsv, lower_green, upper_green)
     mask_inv = cv2.bitwise_not(mask)
 
-    # Replace green background with white
+    
     white_background = np.full_like(image, 255, dtype=np.uint8)
     result = np.where(mask[:, :, None].astype(bool), white_background, image)
 
-    # Apply a small sharpening filter
+    
     sharpening_kernel = np.array([[0, -0.3, 0], [-0.3, 2, -0.3], [0, -0.3, 0]])
     sharpened_image = cv2.filter2D(result, -1, sharpening_kernel)
 
-    # Enhance brightness
-    brightness_factor = 30  # Adjust brightness level
+    
+    brightness_factor = 20  
     brightened_image = cv2.add(sharpened_image, np.array([brightness_factor], dtype=np.uint8))
 
-    # Save the processed image
+    
     cv2.imwrite(processed_path, brightened_image)
 
     return render_template('index.html', photo_exists=True)
