@@ -159,9 +159,6 @@ def start():
     return redirect(url_for('index'))  
 
 
-photo_path = "captured.jpg"
-processed_path = "processed.jpg"
-
 @app.route('/shoot', methods=['POST'])
 def shoot():
     global photo_path, processed_path
