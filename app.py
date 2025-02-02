@@ -159,12 +159,6 @@ def start():
     return redirect(url_for('index'))  
 
 
-from flask import Flask, render_template
-import cv2
-import numpy as np
-
-app = Flask(__name__)
-
 photo_path = "captured.jpg"
 processed_path = "processed.jpg"
 
