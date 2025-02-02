@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, send_from_directory, url_for,
 from picamera2 import Picamera2
 import cv2
 import numpy as np
+from PIL import Image, ImageEnhance
 import os
 import time
 import serial
@@ -10,7 +11,7 @@ from data import gcode_commands_blue, gcode_commands_red, gcode_retrieve_red, gc
 from data import gcode_array, gcode_A3_signature, gcode_A4_signature
 app = Flask(__name__)
 
-#picam = Picamera2()
+picam = Picamera2()
 
 
 isPenFinished = False
@@ -158,6 +159,15 @@ def start():
     return redirect(url_for('index'))  
 
 
+from flask import Flask, render_template
+import cv2
+import numpy as np
+
+app = Flask(__name__)
+
+photo_path = "captured.jpg"
+processed_path = "processed.jpg"
+
 @app.route('/shoot', methods=['POST'])
 def shoot():
     global photo_path, processed_path
@@ -181,20 +191,22 @@ def shoot():
     mask = cv2.inRange(hsv, lower_green, upper_green)
     mask_inv = cv2.bitwise_not(mask)
 
-    # Remove the green background
-    result = cv2.bitwise_and(image, image, mask=mask_inv)
+    # Replace green background with white
+    white_background = np.full_like(image, 255, dtype=np.uint8)
+    result = np.where(mask[:, :, None].astype(bool), white_background, image)
 
-    # Apply a mild sharpening filter
-    sharpening_kernel = np.array([[0, -0.5, 0], [-0.5, 3, -0.5], [0, -0.5, 0]])
+    # Apply a small sharpening filter
+    sharpening_kernel = np.array([[0, -0.3, 0], [-0.3, 2, -0.3], [0, -0.3, 0]])
     sharpened_image = cv2.filter2D(result, -1, sharpening_kernel)
 
-
+    # Enhance brightness
+    brightness_factor = 30  # Adjust brightness level
+    brightened_image = cv2.add(sharpened_image, np.array([brightness_factor], dtype=np.uint8))
 
     # Save the processed image
-    cv2.imwrite(processed_path, sharpened_image)
+    cv2.imwrite(processed_path, brightened_image)
 
     return render_template('index.html', photo_exists=True)
-
 
 
 
