@@ -192,7 +192,8 @@ def shoot():
 
     
     brightness_factor = 20  
-    brightened_image = cv2.add(sharpened_image, np.array([brightness_factor], dtype=np.uint8))
+    brightened_image = cv2.add(sharpened_image, np.full(sharpened_image.shape, brightness_factor, dtype=np.uint8))
+
 
     
     cv2.imwrite(processed_path, brightened_image)
