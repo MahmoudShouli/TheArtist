@@ -175,8 +175,8 @@ def shoot():
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     
-    lower_green = np.array([40, 50, 50])
-    upper_green = np.array([80, 255, 255])
+    lower_green = np.array([40, 50, 150])
+    upper_green = np.array([80, 150, 255])
 
     
     mask = cv2.inRange(hsv, lower_green, upper_green)
@@ -191,7 +191,7 @@ def shoot():
     sharpened_image = cv2.filter2D(result, -1, sharpening_kernel)
 
     
-    brightness_factor = 20  
+    brightness_factor = 10 
     brightened_image = cv2.add(sharpened_image, np.full(sharpened_image.shape, brightness_factor, dtype=np.uint8))
 
 
